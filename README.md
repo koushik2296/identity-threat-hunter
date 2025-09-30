@@ -1,102 +1,123 @@
 # Identity Threat Hunter
 
-Identity Threat Hunter is a prototype system that detects risky sign-ins such as impossible travel, lateral movement, and suspicious geo/ASN/device patterns. Events are indexed in Elastic and can be explored through Kibana dashboards and a minimal analyst UI. All components are containerized and deployable on Google Cloud Run.
+Identity Threat Hunter is a prototype security analytics pipeline built on **Google Cloud Run** and **Elastic Cloud**. It ingests login events, applies basic risk scoring (e.g. impossible travel detection), and exposes dashboards, alerts, and a minimal analyst UI.
 
 ---
 
 ## Architecture
 
-- **Analyst UI (Next.js)** on Cloud Run  
-- **Event Ingestor (FastAPI)** → writes events to Elastic  
-- **Event Generator (FastAPI)** → emits synthetic login events  
-- **Alert Webhook (FastAPI)** → receives Elastic rule actions and forwards notifications (e.g., Slack)  
-- **Elastic Cloud** for storage, search, dashboards, and detection rules  
+- **Ingestor (FastAPI)**  
+  Receives login events → indexes them into Elastic (`ith-events*` index).
+- **Event Generator (FastAPI)**  
+  Generates synthetic login events for testing.
+- **Alert Webhook (FastAPI)**  
+  Receives alert actions from Elastic rules → logs them (optional forward to Slack).
+- **Analyst UI (Next.js)**  
+  Lightweight Cloud Run UI scaffold for analysts.
+- **Elastic Cloud**  
+  Stores data, dashboards, and runs detection rules.
 
 ```
-[Browser UI] → [Cloud Run: analyst-ui] → [Elastic]
-
-[Cloud Scheduler] → [Cloud Run: event-gen] → [Cloud Run: ingestor] → [Elastic]
-
-[Elastic Rule] → [Cloud Run: alert-webhook] → [Slack/Email]
+[Event Generator] → [Ingestor] → [Elastic] ← [Analyst UI]
+                                    │
+                                    └→ [Alert Webhook] → (optional Slack)
 ```
-
-### Core detections
-- **Impossible travel**: suspicious speed/distance between sequential logins per user  
-- **Lateral movement burst**: access to many assets in a short window  
-- **Risky login**: unusual country/ASN/device, off-hours activity, TOR/VPN presence  
 
 ---
 
-## Quickstart (Google Cloud Run)
+## Features
 
-**Prerequisites**:  
-- Google Cloud project with `gcloud` CLI configured  
-- Elastic Cloud deployment and API key  
-- Docker or Cloud Build enabled  
-
-1. Enable required APIs:
-   ```bash
-   gcloud services enable run.googleapis.com pubsub.googleapis.com secretmanager.googleapis.com
-   ```
-
-2. Configure environment variables (`.env` file or Secret Manager), see `.env.example`.
-
-3. Create the Elastic index template:
-   ```bash
-   curl -X PUT "$ELASTIC_CLOUD_URL/_index_template/ith-template"      -H "Authorization: ApiKey $ELASTIC_API_KEY" -H "Content-Type: application/json"      --data-binary @elastic/index_template.json
-   ```
-
-4. Build and deploy services:
-   ```bash
-   # Ingestor
-   gcloud builds submit services/ingestor --tag gcr.io/$GCP_PROJECT_ID/ith-ingestor
-   gcloud run deploy ith-ingestor --image gcr.io/$GCP_PROJECT_ID/ith-ingestor --allow-unauthenticated --region=$GCP_LOCATION
-
-   # Event generator
-   gcloud builds submit services/event-gen --tag gcr.io/$GCP_PROJECT_ID/ith-event-gen
-   gcloud run deploy ith-event-gen --image gcr.io/$GCP_PROJECT_ID/ith-event-gen --allow-unauthenticated --region=$GCP_LOCATION
-
-   # Alert webhook
-   gcloud builds submit services/alert-webhook --tag gcr.io/$GCP_PROJECT_ID/ith-alert
-   gcloud run deploy ith-alert --image gcr.io/$GCP_PROJECT_ID/ith-alert --allow-unauthenticated --region=$GCP_LOCATION
-
-   # Analyst UI
-   gcloud builds submit services/analyst-ui --tag gcr.io/$GCP_PROJECT_ID/ith-ui
-   gcloud run deploy ith-ui --image gcr.io/$GCP_PROJECT_ID/ith-ui --allow-unauthenticated --region=$GCP_LOCATION
-   ```
-
-5. Import Kibana assets:  
-   - Dashboards: `elastic/sample_dashboards.ndjson`  
-   - Detection rules: `elastic/detection_kuery.ndjson` (point action to your `ith-alert` URL)
-
-6. Generate events by:
-   - Calling the event generator `/burst` endpoint  
-   - Or posting sample lines from `data/sample_events.jsonl` to the ingestor `/ingest`  
+- **Impossible Travel Detection**  
+  Flags logins where speed/distance between sequential logins is unrealistic.
+- **Risk Scoring**  
+  Events enriched with `event.risk_score` and explanation fields.
+- **Dashboards**  
+  Kibana dashboards show user login activity and risky sign-ins.
+- **Alerts**  
+  Elastic detection rule triggers webhook calls for suspicious activity.
 
 ---
 
-## Local development
+## Live Demo (Cloud Run)
 
-- Copy `.env.example` → `.env`  
-- Python services can run locally with `uvicorn main:app --reload`  
-- Analyst UI runs with `npm run dev`  
+- Ingestor: `<INGESTOR_URL>`
+- Event Generator: `<EVENT_GEN_URL>`
+- Alert Webhook: `<ALERT_URL>`
+- Analyst UI: `<UI_URL>`
 
 ---
 
-## Repository layout
+## Setup
 
+### 1. Prerequisites
+- Google Cloud project with billing enabled
+- Elastic Cloud deployment and API key
+- gcloud CLI installed
+
+### 2. Create Elastic index template
+```bash
+curl -X PUT "$ELASTIC_CLOUD_URL/_index_template/ith-template"   -H "Authorization: ApiKey $ELASTIC_API_KEY"   -H "Content-Type: application/json"   --data-binary @elastic/index_template.json
 ```
-infra/              # Infra scripts
+
+### 3. Deploy services to Cloud Run
+```bash
+# Ingestor
+gcloud builds submit services/ingestor --tag gcr.io/$PROJECT_ID/ith-ingestor
+gcloud run deploy ith-ingestor --image gcr.io/$PROJECT_ID/ith-ingestor   --region=us-central1 --allow-unauthenticated   --set-env-vars=ELASTIC_CLOUD_URL=$ELASTIC_CLOUD_URL,ELASTIC_API_KEY=$ELASTIC_API_KEY,ELASTIC_INDEX=ith-events
+
+# Event Generator
+gcloud builds submit services/event-gen --tag gcr.io/$PROJECT_ID/ith-event-gen
+gcloud run deploy ith-event-gen --image gcr.io/$PROJECT_ID/ith-event-gen   --region=us-central1 --allow-unauthenticated   --set-env-vars=INGEST_URL=<INGESTOR_URL>
+
+# Alert Webhook
+gcloud builds submit services/alert-webhook --tag gcr.io/$PROJECT_ID/ith-alert
+gcloud run deploy ith-alert --image gcr.io/$PROJECT_ID/ith-alert   --region=us-central1 --allow-unauthenticated   --set-env-vars=SLACK_WEBHOOK_URL=<optional>
+
+# Analyst UI
+gcloud builds submit services/analyst-ui --tag gcr.io/$PROJECT_ID/ith-ui
+gcloud run deploy ith-ui --image gcr.io/$PROJECT_ID/ith-ui   --region=us-central1 --allow-unauthenticated
+```
+
+---
+
+## Usage
+
+### Generate events
+```bash
+curl -X POST "<EVENT_GEN_URL>/burst?user=alice&n=5&seconds=30"
+```
+
+### View in Kibana
+1. Create a data view for `ith-events*` with `@timestamp`.  
+2. Open **Discover** to see login events.  
+3. Import `elastic/sample_dashboards.ndjson` for visualizations.
+
+### Create a detection rule
+1. Kibana → **Stack Management → Rules**.  
+2. Create a rule (KQL query):  
+   ```
+   event.risk_score > 0.7 AND event.action: login
+   ```  
+3. Schedule: every 1 minute.  
+4. Add **Webhook action** pointing to:  
+   ```
+   <ALERT_URL>/alert
+   ```
+
+---
+
+## Repository Layout
+```
 services/
-  ingestor/         # FastAPI: receive events → Elastic
-  event-gen/        # FastAPI: synthetic events
-  alert-webhook/    # FastAPI: alerts → notifications
-  analyst-ui/       # Next.js UI
-elastic/            # index template, dashboards, rules
-data/               # sample events, lists (TOR exits, etc.)
+  ingestor/       # FastAPI: receives events → Elastic
+  event-gen/      # FastAPI: generates synthetic events
+  alert-webhook/  # FastAPI: receives Elastic alerts → logs/Slack
+  analyst-ui/     # Next.js UI
+elastic/          # index template, dashboards, rules
+data/             # sample events
 ```
 
 ---
 
 ## License
-[Apache-2.0](LICENSE)
+Apache-2.0
