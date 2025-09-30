@@ -53,7 +53,7 @@ Identity Threat Hunter is a prototype security analytics pipeline built on **Goo
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ### Prerequisites
 - Google Cloud project with billing enabled  
@@ -88,7 +88,7 @@ gcloud run deploy ith-ui   --image gcr.io/$PROJECT_ID/ith-ui   --region=us-centr
 
 ---
 
-## 🔍 Usage
+## Usage
 
 ### Generate test scenarios
 Use PowerShell or curl, with `ingest_url` URL-encoded.
@@ -116,7 +116,7 @@ Repeat with `mfa_bypass`, `brute_force_then_success`, `privilege_escalation`, `r
 
 ---
 
-## 📊 Improvements made during development
+## Improvements made during development
 
 - Converted Event Generator to support **7 attack scenarios**.  
 - Enhanced Ingestor with **geo-distance**, **ASN**, **MFA correlation**, **failure counting**, and **credential stuffing detection**.  
@@ -128,7 +128,7 @@ Repeat with `mfa_bypass`, `brute_force_then_success`, `privilege_escalation`, `r
 
 ---
 
-## 📂 Repository Layout
+## Repository Layout
 ```
 services/
   ingestor/       # FastAPI: enrich & index events
@@ -140,5 +140,5 @@ elastic/          # index template, saved searches, sample dashboards
 
 ---
 
-## 📜 License
+## License
 Apache-2.0
