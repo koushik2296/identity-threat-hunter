@@ -41,5 +41,5 @@ jobs:
       - name: Install & build
         working-directory: services/analyst-ui
         run: |
-          npm ci || npm install
+          npm install
           npm run build

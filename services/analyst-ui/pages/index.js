@@ -1,15 +1,12 @@
-rm services/analyst-ui/pages/index.tsx
-cat > services/analyst-ui/pages/index.js <<'EOF'
 export default function Home() {
   return (
-    <main style={{padding:24, fontFamily:'ui-sans-serif'}}>
+    <main style={{ padding: 24, fontFamily: 'ui-sans-serif' }}>
       <h1>Identity Threat Hunter</h1>
-      <p>Simple analyst UI. Configure Elastic endpoint in environment and extend pages/api as needed.</p>
+      <p>Analyst UI scaffold. Build is JS-only to keep CI simple.</p>
       <ul>
-        <li>View recent events and incident summaries (extend implementation).</li>
-        <li>Works with Elastic index <code>ith-events</code>.</li>
+        <li>Uses Elastic index <code>ith-events</code>.</li>
+        <li>Extend with pages/api for queries.</li>
       </ul>
     </main>
   );
 }
-EOF
