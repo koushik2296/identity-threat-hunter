@@ -1,3 +1,5 @@
+rm services/analyst-ui/pages/index.tsx
+cat > services/analyst-ui/pages/index.js <<'EOF'
 export default function Home() {
   return (
     <main style={{padding:24, fontFamily:'ui-sans-serif'}}>
@@ -10,3 +12,4 @@ export default function Home() {
     </main>
   );
 }
+EOF
