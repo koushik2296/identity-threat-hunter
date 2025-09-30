@@ -1,0 +1,15 @@
+{
+  "name": "analyst-ui",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 8080"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "cross-fetch": "4.0.0"
+  }
+}

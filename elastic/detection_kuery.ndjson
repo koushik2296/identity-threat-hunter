@@ -1,0 +1,1 @@
+{"attributes":{"name":"Impossible Travel (ITH)","params":{"searchConfiguration":{"query":{"query":"event.risk_score:>0.7 AND event.action:login","language":"kuery"}}}}}
