@@ -1,63 +1,91 @@
-import os, math, time
-from typing import Optional
 from fastapi import FastAPI, Request
-import httpx
+from datetime import datetime, timedelta
+import math, os
+from elasticsearch import Elasticsearch
 
-ELASTIC_CLOUD_URL = os.environ.get("ELASTIC_CLOUD_URL", "")
-ELASTIC_API_KEY = os.environ.get("ELASTIC_API_KEY", "")
-ELASTIC_INDEX = os.environ.get("ELASTIC_INDEX", "ith-events")
+app = FastAPI()
 
-app = FastAPI(title="ITH Ingestor")
+# Elastic client (from env)
+ES_URL = os.environ.get("ELASTIC_CLOUD_URL")
+ES_API_KEY = os.environ.get("ELASTIC_API_KEY")
+if ES_URL is None or ES_API_KEY is None:
+    raise RuntimeError("Set ELASTIC_CLOUD_URL and ELASTIC_API_KEY in environment")
+
+es = Elasticsearch(ES_URL, api_key=ES_API_KEY, verify_certs=True)
+INDEX = os.environ.get("ELASTIC_INDEX", "ith-events")
+
+# In-memory state
+last_login = {}
+failures = {}
+ip_to_users = {}
 
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371.0
-    p = math.pi/180
-    dlat = (lat2-lat1)*p
-    dlon = (lon2-lon1)*p
-    a = 0.5 - math.cos(dlat)/2 + math.cos(lat1*p)*math.cos(lat2*p)*(1-math.cos(dlon))/2
+    R=6371.0
+    phi1,phi2=math.radians(lat1), math.radians(lat2)
+    dphi=math.radians(lat2-lat1)
+    dlambda=math.radians(lon2-lon1)
+    a=math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
     return 2*R*math.asin(math.sqrt(a))
 
-_last_login = {}
+def compute_risk(user_id, ev):
+    score, reasons = 0.0, []
+    ts = datetime.fromisoformat(ev["@timestamp"].replace("Z",""))
+    e, src = ev.get("event", {}), ev.get("src", {})
+
+    prev = last_login.get(user_id)
+    if e.get("action") == "login":
+        lat = src.get("geo", {}).get("lat")
+        lon = src.get("geo", {}).get("lon")
+        asn = src.get("asn")
+
+        if prev and prev.get("lat") is not None and lat is not None:
+            dist = haversine(prev["lat"], prev["lon"], lat, lon)
+            dt = (ts - prev["ts"]).total_seconds()/3600.0
+            if dt > 0 and dist/dt > 900:
+                score += 0.7; reasons.append("impossible_travel")
+
+        if prev and prev.get("asn") and prev["asn"] != asn:
+            score += 0.3; reasons.append("asn_change")
+
+        if prev and prev.get("mfa") and not e.get("mfa", False):
+            if (ts - prev["ts"]) < timedelta(hours=1):
+                score += 0.5; reasons.append("mfa_bypass")
+
+        if e.get("outcome") == "failure":
+            failures.setdefault(user_id, []).append(ts)
+            failures[user_id] = [t for t in failures[user_id] if ts - t <= timedelta(minutes=5)]
+            if len(failures[user_id]) >= 10:
+                score += 0.6; reasons.append("brute_force")
+        else:
+            failures[user_id] = []
+
+        ip = src.get("ip")
+        if ip:
+            ip_to_users.setdefault(ip, []).append((user_id, ts))
+            ip_to_users[ip] = [(u,t) for (u,t) in ip_to_users[ip] if ts - t <= timedelta(minutes=5)]
+            if len(set(u for u,_ in ip_to_users[ip])) >= 10:
+                score += 0.7; reasons.append("credential_stuffing")
+
+        last_login[user_id] = {"ts": ts, "lat": lat, "lon": lon, "asn": asn, "mfa": e.get("mfa", False)}
+
+    if e.get("action") == "role_change" and e.get("new_role") == "admin":
+        score += 1.0; reasons.append("privilege_escalation")
+
+    return min(score, 1.0), ";".join(reasons) if reasons else "none"
 
 @app.post("/ingest")
-async def ingest(event: dict):
-    # Basic risk scoring for demo
-    user = (event.get("user") or {}).get("id", "unknown")
-    ts = event.get("@timestamp")
-    geo = (((event.get("src") or {}).get("geo")) or {})
-    lat, lon = geo.get("lat"), geo.get("lon")
-
-    risk = 0.0
-    expl = []
-
-    prev = _last_login.get(user)
-    if prev and lat is not None and lon is not None:
-        dist_km = haversine(prev["lat"], prev["lon"], lat, lon)
-        # Assume 1 hour between events if timestamps equal/missing
-        time_h = max((prev["t"] and ts and ( (parse_ts(ts)-prev["t"])/3600.0 )) or 1.0, 0.01)
-        speed = dist_km / time_h
-        if dist_km > 800 and time_h < 2 or speed > 900:
-            risk += 0.8
-            expl.append(f"Impossible travel: {dist_km:.0f} km in {time_h:.2f} h (≈{speed:.0f} km/h)")
-
-    if lat is not None and lon is not None:
-        _last_login[user] = {"lat": lat, "lon": lon, "t": parse_ts(ts) if ts else time.time()}
-
-    event.setdefault("event", {}).update({"risk_score": risk, "explanation": "; ".join(expl)})
-    # index into Elastic
-    async with httpx.AsyncClient(timeout=10) as client:
-        url = f"{ELASTIC_CLOUD_URL}/{ELASTIC_INDEX}/_doc"
-        headers = {"Authorization": f"ApiKey {ELASTIC_API_KEY}"}
-        r = await client.post(url, headers=headers, json=event)
-        r.raise_for_status()
-    return {"ok": True, "risk_score": risk, "explanation": event["event"]["explanation"]}
-
-def parse_ts(ts: Optional[str]) -> float:
-    # naive ISO8601 parser for Z timestamps
-    if not ts:
-        return time.time()
-    try:
-        from datetime import datetime, timezone
-        return datetime.fromisoformat(ts.replace("Z","+00:00")).timestamp()
-    except Exception:
-        return time.time()
+async def ingest(req: Request):
+    ev = await req.json()
+    events = ev if isinstance(ev, list) else [ev]
+    results = []
+    for e in events:
+        uid = e.get("user", {}).get("id", "unknown")
+        s, reason = compute_risk(uid, e)
+        e.setdefault("event", {})["risk_score"] = s
+        e["event"]["explanation"] = reason
+        try:
+            es.index(index=INDEX, document=e)
+            results.append({"user": uid, "risk": s, "reason": reason})
+        except Exception as err:
+            results.append({"user": uid, "error": str(err)})
+    return {"results": results}

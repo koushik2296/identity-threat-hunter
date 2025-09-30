@@ -1,0 +1,21 @@
+﻿# Python / Node
+__pycache__/
+*.pyc
+node_modules/
+
+# Build artifacts
+dist/
+.build/
+.next/
+
+# Local env & secrets
+.env
+.env.*
+*.key
+*.pem
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
