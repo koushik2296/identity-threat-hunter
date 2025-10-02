@@ -1,0 +1,5 @@
+{
+  "size": 5,
+  "sort": [{"@timestamp":{"order":"desc"}}],
+  "query": { "match_all": {} }
+}

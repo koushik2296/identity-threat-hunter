@@ -1,0 +1,17 @@
+{
+  "index_patterns": ["ith-users-profile*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "user_id": {"type":"keyword"},
+        "updated_at":{"type":"date"},
+        "profile_version":{"type":"integer"},
+        "geo":{"properties":{"centroid":{"type":"geo_point"},"radius_km_p95":{"type":"float"},"country_counts":{"type":"object","enabled":true}}},
+        "network":{"properties":{"asn_counts":{"type":"object","enabled":true},"asn_churn_rate":{"type":"float"}}},
+        "device":{"properties":{"ua_family_counts":{"type":"object","enabled":true},"os_family_counts":{"type":"object","enabled":true},"fp_hash_counts":{"type":"object","enabled":true}}},
+        "time":{"properties":{"hour_hist_24":{"type":"integer"},"weekday_hist_7":{"type":"integer"}}},
+        "auth":{"properties":{"mfa_ratio":{"type":"float"},"fail_ratio":{"type":"float"}}}
+      }
+    }
+  }
+}
