@@ -1,0 +1,253 @@
+diff --git a/services/event-gen/app/utils/emit_event.py b/services/event-gen/app/utils/emit_event.py
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/services/event-gen/app/utils/emit_event.py
+@@ -0,0 +1,18 @@
++from datetime import datetime, timezone
++import os
++import requests
++
++ELASTIC_INGEST_URL = os.getenv("INGESTOR_URL", "http://ingestor:8080/ingest")
++
++def emit_event(evt: dict) -> None:
++    payload = {
++        "@timestamp": datetime.now(timezone.utc).isoformat(),
++        "product": "ith",
++        "pipeline": "identity-threat-hunter",
++        **evt,
++    }
++    try:
++        requests.post(ELASTIC_INGEST_URL, json=payload, timeout=5)
++    except Exception:
++        # Do not fail demo flows
++        pass
+diff --git a/services/event-gen/app/routes/honey.py b/services/event-gen/app/routes/honey.py
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/services/event-gen/app/routes/honey.py
+@@ -0,0 +1,30 @@
++from fastapi import APIRouter
++from app.utils.emit_event import emit_event
++
++router = APIRouter(prefix="/honey", tags=["honey"])
++
++@router.post("/canary_user_probe")
++def canary_user_probe(username: str = "canary-db-admin", source_ip: str = "203.0.113.10"):
++    evt = {
++        "event": {"category": "honeypot", "type": "auth", "action": "canary_user_login", "outcome": "failure"},
++        "tags": ["honey", "canary", "high-signal"],
++        "user": {"name": username, "id": username},
++        "source": {"ip": source_ip},
++        "risk": {"score": 99, "reason": "Canary user login attempt"},
++        "event_explanation": f"Failed login to {username} (canary)."
++    }
++    emit_event(evt)
++    return {"status": "ok", "emitted": evt}
++
++@router.post("/canary_token_use")
++def canary_token_use(token_id: str = "tok_canary_1", location_hint: str = "repo/.env", source_ip: str = "198.51.100.22"):
++    evt = {
++        "event": {"category": "honeypot", "type": "token_use", "action": "canary_token_used", "outcome": "success"},
++        "tags": ["honey", "canary", "high-signal"],
++        "token": {"id": token_id, "location_hint": location_hint},
++        "source": {"ip": source_ip},
++        "risk": {"score": 99, "reason": "Canary token used"},
++        "event_explanation": f"Canary token {token_id} was used; planted in {location_hint}."
++    }
++    emit_event(evt)
++    return {"status": "ok", "emitted": evt}
+diff --git a/services/ingestor/app/middlewares/honey_guard.py b/services/ingestor/app/middlewares/honey_guard.py
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/services/ingestor/app/middlewares/honey_guard.py
+@@ -0,0 +1,22 @@
++import os
++from typing import Dict, Any
++
++CANARY_PREFIX = os.getenv("HONEY_CANARY_USER_PREFIX", "canary-")
++HONEY_ENABLED = os.getenv("HONEY_ENABLED", "true").lower() == "true"
++
++def apply_honey_enrichment(payload: Dict[str, Any]) -> Dict[str, Any]:
++    if not HONEY_ENABLED:
++        return payload
++
++    user_name = (payload.get("user") or {}).get("name") or ""
++    is_honey = user_name.startswith(CANARY_PREFIX) or (payload.get("event") or {}).get("category") == "honeypot"
++
++    if is_honey:
++        payload.setdefault("event", {})["category"] = "honeypot"
++        tags = set(payload.get("tags") or [])
++        tags.update({"honey", "canary", "high-signal"})
++        payload["tags"] = sorted(list(tags))
++        payload["risk"] = {"score": 99, "reason": "Honey identity interaction"}
++        if "event_explanation" not in payload:
++            payload["event_explanation"] = "Honey identity interaction detected."
++    return payload
+diff --git a/services/ingestor/app/utils/honey_integration_readme.txt b/services/ingestor/app/utils/honey_integration_readme.txt
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/services/ingestor/app/utils/honey_integration_readme.txt
+@@ -0,0 +1,8 @@
++Use apply_honey_enrichment(doc) after normal enrichers and before indexing:
++from app.middlewares.honey_guard import apply_honey_enrichment
++
++def process_and_index(doc: dict):
++    # ... existing enrichers (geoip/asn/etc.)
++    doc = apply_honey_enrichment(doc)
++    # ... index into Elastic
++    return doc
+diff --git a/services/alert-webhook/app/utils/severity.py b/services/alert-webhook/app/utils/severity.py
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/services/alert-webhook/app/utils/severity.py
+@@ -0,0 +1,5 @@
++def map_severity(event: dict) -> str:
++    cat = ((event.get("event") or {}).get("category") or "").lower()
++    if cat == "honeypot":
++        return "P1"
++    return "P3"
+diff --git a/web/analyst-ui/components/HoneyToggle.tsx b/web/analyst-ui/components/HoneyToggle.tsx
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/web/analyst-ui/components/HoneyToggle.tsx
+@@ -0,0 +1,23 @@
++import { useRouter } from "next/router";
++
++export default function HoneyToggle() {
++  const router = useRouter();
++  const isHoney = router.query?.honey === "1";
++
++  const toggle = () => {
++    const q = new URLSearchParams(window.location.search);
++    if (isHoney) { q.delete("honey"); } else { q.set("honey", "1"); }
++    const next = `${window.location.pathname}?${q.toString()}`;
++    router.push(next);
++  };
++
++  return (
++    <button
++      onClick={toggle}
++      className="px-3 py-2 rounded-2xl shadow text-sm border"
++      title="Filter honeypot events"
++    >
++      {isHoney ? "HONEY: ON" : "HONEY: OFF"}
++    </button>
++  );
++}
+diff --git a/web/analyst-ui/pages/api/events.ts b/web/analyst-ui/pages/api/events.ts
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/web/analyst-ui/pages/api/events.ts
+@@ -0,0 +1,8 @@
++// Minimal example. Replace with your existing API route to Elastic.
++import type { NextApiRequest, NextApiResponse } from "next";
++
++export default async function handler(req: NextApiRequest, res: NextApiResponse) {
++  const { honey } = req.query;
++  const kql = honey === "1" ? 'event.category: "honeypot" OR user.name: canary-*' : '*';
++  res.status(200).json({ kql });
++}
+diff --git a/web/analyst-ui/pages/honey.tsx b/web/analyst-ui/pages/honey.tsx
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/web/analyst-ui/pages/honey.tsx
+@@ -0,0 +1,31 @@
++import { useEffect, useState } from "react";
++import HoneyToggle from "../components/HoneyToggle";
++
++type Query = { kql: string };
++
++export default function HoneyPage() {
++  const [query, setQuery] = useState<Query | null>(null);
++
++  useEffect(() => {
++    fetch(`/api/events${window.location.search}`)
++      .then(r => r.json())
++      .then(setQuery)
++      .catch(() => setQuery({ kql: "error" } as Query));
++  }, [typeof window === "undefined" ? "" : window.location.search]);
++
++  return (
++    <div className="p-6 space-y-4">
++      <div className="flex items-center justify-between">
++        <h1 className="text-xl font-semibold">Honey Identity Events</h1>
++        <HoneyToggle />
++      </div>
++      <div className="p-4 rounded-xl border">
++        <div className="text-sm opacity-70">Effective KQL</div>
++        <pre className="text-sm">{query?.kql ?? "..."}</pre>
++      </div>
++      <p className="text-sm opacity-70">
++        Replace this page&#39;s fetch with your Elastic search and render results in your existing table.
++      </p>
++    </div>
++  );
++}
+diff --git a/kibana/rules/honey_identity_trigger.ndjson b/kibana/rules/honey_identity_trigger.ndjson
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/kibana/rules/honey_identity_trigger.ndjson
+@@ -0,0 +1,1 @@
++{"attributes":{"actions":[],"enabled":true,"name":"Honey Identity Trigger","tags":["ith","honeypot"],"risk_score":99,"severity":"critical","schedule":{"interval":"1m"},"type":"query","params":{"index":["ith-events-enriched*"],"query":"event.category: \"honeypot\" OR user.name: canary-*","language":"kuery","from":"now-1m","size":100},"throttle":null},"type":"siem.notifications","references":[]}
+diff --git a/config/.env.honey.example b/config/.env.honey.example
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/config/.env.honey.example
+@@ -0,0 +1,8 @@
++# Honey Identity toggles
++HONEY_ENABLED=true
++HONEY_CANARY_USER_PREFIX=canary-
++HONEY_TOKEN_IDS=tok_canary_1,tok_canary_2
++HONEY_SEVERITY=critical
++
++# In demo, event-gen posts here
++INGESTOR_URL=http://localhost:8080/ingest
+diff --git a/README_HONEY_IDENTITY.md b/README_HONEY_IDENTITY.md
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/README_HONEY_IDENTITY.md
+@@ -0,0 +1,33 @@
++# Honey-Identity Traps (Canary Users & Tokens)
++
++Adds high-signal detections to the Identity Threat Hunter project by introducing canary users and decoy tokens. Any interaction with these decoys is malicious and triggers critical alerts.
++
++## Contents
++- `services/event-gen/app/routes/honey.py` — Demo routes to emit canary events
++- `services/ingestor/app/middlewares/honey_guard.py` — Enrichment to tag honeypot events and force high risk
++- `services/alert-webhook/app/utils/severity.py` — Severity override for honeypot events (P1)
++- `web/analyst-ui/components/HoneyToggle.tsx` and `pages/honey.tsx` — UI toggle and demo page
++- `kibana/rules/honey_identity_trigger.ndjson` — Detection rule export (KQL)
++- `config/.env.honey.example` — Environment toggles
++
++## Quick Start (local demo)
++1. Add `.env` variables from `config/.env.honey.example` to your environment.
++2. Ensure `ingestor` is reachable at `INGESTOR_URL` (or update `INGESTOR_URL` in `emit_event.py`).
++3. Run event-gen and hit the demo endpoints:
++   - `POST /honey/canary_user_probe` with body: `{ "username": "canary-db-admin" }`
++   - `POST /honey/canary_token_use` with body: `{ "token_id": "tok_canary_1" }`
++4. In Kibana, import `kibana/rules/honey_identity_trigger.ndjson` and enable the rule.
++5. In the Analyst UI, open `/honey` and toggle the HONEY filter.
++
++## Integration Notes
++- No new index is required. Honeypot events are written into your existing enriched index.
++- The honey guard can be inserted after your normal enrichers and before indexing.
++- The severity helper can be used in the alert-webhook to hardcode P1 for honeypot category.
++
++## Naming Conventions
++- Canary users: `canary-*` (e.g., `canary-db-admin`, `canary-backup-svc`)
++- Tokens: `tok_canary_*`
++
++## Safety
++- Canary users should not be granted real access.
++- Canary tokens must never connect to production systems.
