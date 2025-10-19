@@ -1,52 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Identity Threat Hunter (ITH)</title>
-  <meta name="description" content="Identity Threat Hunter (ITH) — Cloud-native identity security analytics on Google Cloud Run and Elastic Security.">
-  <meta name="theme-color" content="#4285F4">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Identity Threat Hunter (ITH)</title>
+<meta content="Identity Threat Hunter (ITH) — Cloud-native identity security analytics on Google Cloud Run and Elastic Security." name="description"/>
+<meta content="#4285F4" name="theme-color"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand">Identity Threat Hunter <span class="muted">(ITH)</span></div>
-      <nav class="nav">
-        <a href="#overview">Overview</a>
-        <a href="#synergy">GCP + Elastic</a>
-        <a href="#rules">Detections</a>
-        <a href="#demo">Live Demo</a>
-        <a href="#docs">Docs</a>
-      </nav>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div class="container">
-      <h1>Identity Threat Hunter</h1>
-      <p class="lead">Cloud‑native identity security analytics on <strong>Google Cloud Run</strong> and <strong>Elastic Security</strong>.</p>
-      <div class="cta">
-        <a class="btn primary" href="https://ith-ui-1054075376433.us-central1.run.app" target="_blank" rel="noopener">Open Analyst UI</a>
-        <a class="btn" href="https://github.com/koushik2296/identity-threat-hunter" target="_blank" rel="noopener">View Source</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="overview" class="section">
-    <div class="container grid-2">
-      <div>
-        <h2>Overview</h2>
-        <p>ITH ingests authentication activity, enriches events with context and behavior, and raises real‑time alerts for identity‑based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
-        <ul class="check">
-          <li>Seven baseline identity detections</li>
-          <li>Honey Identity canaries</li>
-          <li>Digital Twin enrichment</li>
-          <li>Quantum Guardian (QES) add‑on</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Architecture (at a glance)</h3>
+<header class="site-header">
+<div class="container header-inner">
+<div class="brand">Identity Threat Hunter <span class="muted">(ITH)</span></div>
+<nav class="nav">
+<a href="#overview">Overview</a>
+<a href="#synergy">GCP + Elastic</a>
+<a href="#rules">Detections</a>
+<a href="#demo">Live Demo</a>
+<a href="#docs">Docs</a>
+</nav>
+</div>
+</header>
+<section class="hero">
+<div class="container">
+<h1>Identity Threat Hunter</h1>
+<p class="lead">Cloud‑native identity security analytics on <strong>Google Cloud Run</strong> and <strong>Elastic Security</strong>.</p>
+<div class="cta">
+<a class="btn primary" href="https://ith-ui-1054075376433.us-central1.run.app" rel="noopener" target="_blank">Open Analyst UI</a>
+<a class="btn" href="https://github.com/koushik2296/identity-threat-hunter" rel="noopener" target="_blank">View Source</a>
+</div>
+</div>
+</section>
+<section class="section" id="overview">
+<div class="container grid-2">
+<div>
+<h2>Overview</h2>
+<p>ITH ingests authentication activity, enriches events with context and behavior, and raises real‑time alerts for identity‑based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
+<ul class="check">
+<li>Seven baseline identity detections</li>
+<li>Honey Identity canaries</li>
+<li>Digital Twin enrichment</li>
+<li>Quantum Guardian (QES) add‑on</li>
+</ul>
+</div>
+<div class="card">
+<h3>Architecture (at a glance)</h3>
 <pre class="ascii">
 [User/Judge] → ith-ui (Cloud Run)
                   │
@@ -57,98 +56,202 @@
                   │                                └→ Kibana Alerts
                   └→ ith-alert (Webhook)
 </pre>
-      </div>
-    </div>
-  </section>
-
-  <section id="synergy" class="section alt">
-    <div class="container grid-2">
-      <div class="card">
-        <h3>Google Cloud</h3>
-        <p>Cloud Run hosts stateless microservices (UI, ingestor, event‑gen, add‑ons). It scales to zero, supports public endpoints, and integrates with Cloud Build for CI/CD.</p>
-        <ul class="dash">
-          <li>Serverless containers</li>
-          <li>Secure, public endpoints for demos</li>
-          <li>Cloud Logging for ops visibility</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Elastic Security</h3>
-        <p>Elastic Cloud stores events, runs rule schedules, and visualizes alerts. KQL‑based detections provide transparent, reproducible logic.</p>
-        <ul class="dash">
-          <li>Fast indexing and search</li>
-          <li>Kibana Rules & Alerts</li>
-          <li>Dashboards and timelines</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section id="rules" class="section">
-    <div class="container">
-      <h2>Detections</h2>
-      <p>ITH ships with seven baseline rules and two add‑ons. All rules are documented in the repository and importable in Kibana.</p>
-      <div class="rules-grid">
-        <div class="rule"><h4>Impossible Travel</h4><p>Consecutive logins from infeasible geolocations.</p></div>
-        <div class="rule"><h4>MFA Bypass</h4><p>Success without expected MFA challenge.</p></div>
-        <div class="rule"><h4>Brute Force → Success</h4><p>Multiple failures followed by success.</p></div>
-        <div class="rule"><h4>Rare Country</h4><p>Logins from unusual geographies.</p></div>
-        <div class="rule"><h4>Credential Stuffing</h4><p>High‑volume attempts across users from one source.</p></div>
-        <div class="rule"><h4>ASN / ISP Change</h4><p>Sudden provider change for same actor.</p></div>
-        <div class="rule"><h4>Privilege Escalation</h4><p>New roles or privileges after login.</p></div>
-        <div class="rule add"><h4>Honey Identity</h4><p>Canary user/token activity. Critical signal.</p></div>
-        <div class="rule add"><h4>Quantum Guardian</h4><p>QES ≥ 80 indicates crypto exposure risk.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="demo" class="section alt">
-    <div class="container grid-2">
-      <div>
-        <h2>Live Demo</h2>
-        <p>Use the hosted Analyst UI to trigger scenarios. Alerts will appear in Kibana within one minute when rules are enabled.</p>
-        <ul class="dash">
-          <li>Analyst UI: <a href="https://ith-ui-1054075376433.us-central1.run.app" target="_blank" rel="noopener">Open</a></li>
-          <li><span class="muted">Ingestor and Quantum services are API endpoints and may return empty responses in the browser. Use the Analyst UI instead.</span></li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Judge Login</h3>
-        <p>Elastic Security (default space):</p>
-        <p><a class="btn small" href="https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts" target="_blank" rel="noopener">Open Kibana Alerts</a></p>
-        <div class="creds">
-          <div><strong>Username:</strong> <code>ith_judge</code></div>
-          <div><strong>Password:</strong> <code>Hackathon2025</code></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="docs" class="section">
-    <div class="container grid-2">
-      <div>
-        <h2>Documentation</h2>
-        <ul class="doclist">
-          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README.md" target="_blank" rel="noopener">README</a></li>
-          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README_RUNBOOK.md" target="_blank" rel="noopener">Runbook</a></li>
-          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/INSTRUCTIONS_FOR_JUDGES.md" target="_blank" rel="noopener">Instructions for Judges</a></li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Repository</h3>
-        <p>Open-source on GitHub with permissive Apache-2.0 license.</p>
-        <p><a class="btn small" href="https://github.com/koushik2296/identity-threat-hunter" target="_blank" rel="noopener">Browse Repository</a></p>
-      </div>
-    </div>
-  </section>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div>© Identity Threat Hunter (ITH)</div>
-      <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
-    </div>
-  </footer>
-
-  <script src="script.js"></script>
+</div>
+</div>
+</section>
+<section class="section alt" id="synergy">
+<div class="container grid-2">
+<div class="card">
+<h3>Google Cloud</h3>
+<p>Cloud Run hosts stateless microservices (UI, ingestor, event‑gen, add‑ons). It scales to zero, supports public endpoints, and integrates with Cloud Build for CI/CD.</p>
+<ul class="dash">
+<li>Serverless containers</li>
+<li>Secure, public endpoints for demos</li>
+<li>Cloud Logging for ops visibility</li>
+</ul>
+</div>
+<div class="card">
+<h3>Elastic Security</h3>
+<p>Elastic Cloud stores events, runs rule schedules, and visualizes alerts. KQL‑based detections provide transparent, reproducible logic.</p>
+<ul class="dash">
+<li>Fast indexing and search</li>
+<li>Kibana Rules &amp; Alerts</li>
+<li>Dashboards and timelines</li>
+</ul>
+</div>
+</div>
+</section>
+<section class="section" id="rules"><h2>Detection Rule Catalog</h2><div class="rules-grid">
+<div class="rule-card">
+<div class="rule-title">ITH – Rare Country Login</div>
+<div class="rule-severity">Severity: Medium</div>
+<p class="rule-desc">Detects logins originating from unusual or first‑seen countries.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Privilege Escalation</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Detects post‑login privilege or role elevation events.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – ASN / ISP Change</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">ITH – ASN / ISP Change</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – MFA Bypass</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Detects successful authentications that appear to bypass expected MFA.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Credential Stuffing</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Detects many login attempts across multiple accounts from a single source.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Brute Force Then Success</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Detects multiple failures followed by a success from the same source.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – All Scenarios (Judge Demo)</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">See Elastic rule for full detection logic.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH - First Seen Admin Tool on Host</div>
+<div class="rule-severity">Severity: Medium</div>
+<p class="rule-desc">Flags the first observed execution of selected admin tools per host in ITH indices.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Impossible Travel</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Detects logins from geographically distant locations within a short time window.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Honey-Identity Trap Detection</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">Detects honeypot/canary events from Identity Threat Hunter.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Quantum Adaptive Response</div>
+<div class="rule-severity">Severity: Low</div>
+<p class="rule-desc">Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">Suspicious PowerShell (AutoTriage)</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Suspicious PowerShell (AutoTriage)</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH - Quantum Guardian High-Risk Finding</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH High Risk Score (&gt;= 90)</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Any event with risk.score &gt;= 90.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Impossible Travel</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">ITH Impossible Travel</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Canary Username Touched</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">Any event involving a canary user (user.name starts with canary-).</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH - Possible Brute-Force (source.ip + user.name)</div>
+<div class="rule-severity">Severity: Medium</div>
+<p class="rule-desc">Counts failed authentications per source.ip and user.name over the interval in ITH indices.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Impossible Travel (Custom, with Response Actions)</div>
+<div class="rule-severity">Severity: High</div>
+<p class="rule-desc">Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">Quantum Guardian – High QES</div>
+<div class="rule-severity">Severity: Low</div>
+<p class="rule-desc">Quantum Guardian – High QES</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Honey Token Used</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">Detects canary token usage events.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH - VSS Deleted via vssadmin</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Canary User Login Attempt (Failure)</div>
+<div class="rule-severity">Severity: Critical</div>
+<p class="rule-desc">Detects canary user login attempts that failed.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH – Smoke Test (mfa_bypass)</div>
+<div class="rule-severity">Severity: Low</div>
+<p class="rule-desc">ITH – Smoke Test (mfa_bypass)</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Suspicious Test IP Ranges (Demo)</div>
+<div class="rule-severity">Severity: Medium</div>
+<p class="rule-desc">Matches RFC5737 example IPs used in demo honey events.</p>
+</div>
+<div class="rule-card">
+<div class="rule-title">ITH Alert Webhook</div>
+<div class="rule-severity">Severity: —</div>
+<p class="rule-desc">See Elastic rule for full detection logic.</p>
+</div>
+</div></section>
+<section class="section alt" id="demo">
+<div class="container grid-2">
+<div>
+<h2>Live Demo</h2>
+<p>Use the hosted Analyst UI to trigger scenarios. Alerts will appear in Kibana within one minute when rules are enabled.</p>
+<ul class="dash">
+<li>Analyst UI: <a href="https://ith-ui-1054075376433.us-central1.run.app" rel="noopener" target="_blank">Open</a></li>
+<li><span class="muted">Ingestor and Quantum services are API endpoints and may return empty responses in the browser. Use the Analyst UI instead.</span></li>
+</ul>
+</div>
+<div class="card">
+<h3>Judge Login</h3>
+<p>Elastic Security (default space):</p>
+<p><a class="btn small" href="https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts" rel="noopener" target="_blank">Open Kibana Alerts</a></p>
+<div class="creds">
+<div><strong>Username:</strong> <code>ith_judge</code></div>
+<div><strong>Password:</strong> <code>Hackathon2025</code></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="docs">
+<div class="container grid-2">
+<div>
+<h2>Documentation</h2>
+<ul class="doclist">
+<li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README.md" rel="noopener" target="_blank">README</a></li>
+<li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README_RUNBOOK.md" rel="noopener" target="_blank">Runbook</a></li>
+<li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/INSTRUCTIONS_FOR_JUDGES.md" rel="noopener" target="_blank">Instructions for Judges</a></li>
+</ul>
+</div>
+<div class="card">
+<h3>Repository</h3>
+<p>Open-source on GitHub with permissive Apache-2.0 license.</p>
+<p><a class="btn small" href="https://github.com/koushik2296/identity-threat-hunter" rel="noopener" target="_blank">Browse Repository</a></p>
+</div>
+</div>
+</section>
+<footer class="site-footer">
+<div class="container footer-inner">
+<div>© Identity Threat Hunter (ITH)</div>
+<div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
+</div>
+</footer>
+<script src="script.js"></script>
 </body>
 </html>
