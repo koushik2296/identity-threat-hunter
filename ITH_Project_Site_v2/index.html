@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Identity Threat Hunter (ITH)</title>
+  <meta name="description" content="Identity Threat Hunter (ITH) — Cloud-native identity security analytics on Google Cloud Run and Elastic Security.">
+  <meta name="theme-color" content="#4285F4">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">Identity Threat Hunter <span class="muted">(ITH)</span></div>
+      <nav class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#synergy">GCP + Elastic</a>
+        <a href="#rules">Detections</a>
+        <a href="#demo">Live Demo</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Identity Threat Hunter</h1>
+      <p class="lead">Cloud‑native identity security analytics on <strong>Google Cloud Run</strong> and <strong>Elastic Security</strong>.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://ith-ui-1054075376433.us-central1.run.app" target="_blank" rel="noopener">Open Analyst UI</a>
+        <a class="btn" href="https://github.com/koushik2296/identity-threat-hunter" target="_blank" rel="noopener">View Source</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="overview" class="section">
+    <div class="container grid-2">
+      <div>
+        <h2>Overview</h2>
+        <p>ITH ingests authentication activity, enriches events with context and behavior, and raises real‑time alerts for identity‑based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
+        <ul class="check">
+          <li>Seven baseline identity detections</li>
+          <li>Honey Identity canaries</li>
+          <li>Digital Twin enrichment</li>
+          <li>Quantum Guardian (QES) add‑on</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Architecture (at a glance)</h3>
+<pre class="ascii">
+[User/Judge] → ith-ui (Cloud Run)
+                  │
+                  ├→ ith-event-gen → ith-ingestor → Elastic (ith-events)
+                  │                                ├→ Digital Twin
+                  │                                ├→ Honey Identity
+                  │                                ├→ Quantum Guardian
+                  │                                └→ Kibana Alerts
+                  └→ ith-alert (Webhook)
+</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="synergy" class="section alt">
+    <div class="container grid-2">
+      <div class="card">
+        <h3>Google Cloud</h3>
+        <p>Cloud Run hosts stateless microservices (UI, ingestor, event‑gen, add‑ons). It scales to zero, supports public endpoints, and integrates with Cloud Build for CI/CD.</p>
+        <ul class="dash">
+          <li>Serverless containers</li>
+          <li>Secure, public endpoints for demos</li>
+          <li>Cloud Logging for ops visibility</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Elastic Security</h3>
+        <p>Elastic Cloud stores events, runs rule schedules, and visualizes alerts. KQL‑based detections provide transparent, reproducible logic.</p>
+        <ul class="dash">
+          <li>Fast indexing and search</li>
+          <li>Kibana Rules & Alerts</li>
+          <li>Dashboards and timelines</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="rules" class="section">
+    <div class="container">
+      <h2>Detections</h2>
+      <p>ITH ships with seven baseline rules and two add‑ons. All rules are documented in the repository and importable in Kibana.</p>
+      <div class="rules-grid">
+        <div class="rule"><h4>Impossible Travel</h4><p>Consecutive logins from infeasible geolocations.</p></div>
+        <div class="rule"><h4>MFA Bypass</h4><p>Success without expected MFA challenge.</p></div>
+        <div class="rule"><h4>Brute Force → Success</h4><p>Multiple failures followed by success.</p></div>
+        <div class="rule"><h4>Rare Country</h4><p>Logins from unusual geographies.</p></div>
+        <div class="rule"><h4>Credential Stuffing</h4><p>High‑volume attempts across users from one source.</p></div>
+        <div class="rule"><h4>ASN / ISP Change</h4><p>Sudden provider change for same actor.</p></div>
+        <div class="rule"><h4>Privilege Escalation</h4><p>New roles or privileges after login.</p></div>
+        <div class="rule add"><h4>Honey Identity</h4><p>Canary user/token activity. Critical signal.</p></div>
+        <div class="rule add"><h4>Quantum Guardian</h4><p>QES ≥ 80 indicates crypto exposure risk.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demo" class="section alt">
+    <div class="container grid-2">
+      <div>
+        <h2>Live Demo</h2>
+        <p>Use the hosted Analyst UI to trigger scenarios. Alerts will appear in Kibana within one minute when rules are enabled.</p>
+        <ul class="dash">
+          <li>Analyst UI: <a href="https://ith-ui-1054075376433.us-central1.run.app" target="_blank" rel="noopener">Open</a></li>
+          <li><span class="muted">Ingestor and Quantum services are API endpoints and may return empty responses in the browser. Use the Analyst UI instead.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Judge Login</h3>
+        <p>Elastic Security (default space):</p>
+        <p><a class="btn small" href="https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts" target="_blank" rel="noopener">Open Kibana Alerts</a></p>
+        <div class="creds">
+          <div><strong>Username:</strong> <code>ith_judge</code></div>
+          <div><strong>Password:</strong> <code>Hackathon2025</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="docs" class="section">
+    <div class="container grid-2">
+      <div>
+        <h2>Documentation</h2>
+        <ul class="doclist">
+          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README.md" target="_blank" rel="noopener">README</a></li>
+          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/README_RUNBOOK.md" target="_blank" rel="noopener">Runbook</a></li>
+          <li><a href="https://github.com/koushik2296/identity-threat-hunter/blob/main/INSTRUCTIONS_FOR_JUDGES.md" target="_blank" rel="noopener">Instructions for Judges</a></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Repository</h3>
+        <p>Open-source on GitHub with permissive Apache-2.0 license.</p>
+        <p><a class="btn small" href="https://github.com/koushik2296/identity-threat-hunter" target="_blank" rel="noopener">Browse Repository</a></p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© Identity Threat Hunter (ITH)</div>
+      <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
