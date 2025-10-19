@@ -1,0 +1,47 @@
+﻿# Python / Node
+__pycache__/
+*.pyc
+node_modules/
+
+# Build artifacts
+dist/
+.build/
+.next/
+coverage/
+*.egg-info/
+
+# Local env & secrets (never commit)
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.crt
+*.der
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local-only files (keep out of GitHub)
+Links.txt
+honey-identity-addon.add-only.patch
+idea2-honey-identity-addon.zip
+
+# Project-specific local envs
+config/.env.hackathon
+
+# Optional: if your example contains real links/IDs, ignore it too
+config/.env.honey.example
+# Vendor/agent payloads and other large artifacts
+elastic-agent-*/
+*.zip
+*.exe
+*.msi
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+*.iso

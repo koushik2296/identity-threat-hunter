@@ -1,0 +1,24 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build","-t","gcr.io/$PROJECT_ID/ith-ingestor:$BUILD_ID","."]
+  - name: gcr.io/cloud-builders/docker
+    args: ["push","gcr.io/$PROJECT_ID/ith-ingestor:$BUILD_ID"]
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -c
+      - >
+        gcloud run deploy ith-ingestor
+        --image gcr.io/$PROJECT_ID/ith-ingestor:$BUILD_ID
+        --region us-central1
+        --platform managed
+        --allow-unauthenticated
+        --set-env-vars "ELASTIC_CLOUD_URL=${_ELASTIC_CLOUD_URL},ELASTIC_INDEX=${_ELASTIC_INDEX},ELASTIC_API_KEY=${_ELASTIC_API_KEY}"
+
+images:
+  - gcr.io/$PROJECT_ID/ith-ingestor:$BUILD_ID
+
+substitutions:
+  _ELASTIC_CLOUD_URL: ""
+  _ELASTIC_API_KEY: ""
+  _ELASTIC_INDEX: "ith-events"

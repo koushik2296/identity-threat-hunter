@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "**/*.md"
+      - "elastic/**"
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  python-services:
+    name: Build Python services
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: event-gen deps
+        working-directory: services/event-gen
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          python - <<'PY'
+          import importlib
+          importlib.import_module('fastapi')
+          importlib.import_module('uvicorn')
+          importlib.import_module('requests')
+          print("event-gen deps OK")
+          PY
+
+      - name: ingestor deps
+        working-directory: services/ingestor
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          python - <<'PY'
+          import importlib
+          importlib.import_module('fastapi')
+          importlib.import_module('uvicorn')
+          importlib.import_module('elasticsearch')
+          print("ingestor deps OK")
+          PY
+
+  ui:
+    name: Build Analyst UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install & build
+        working-directory: services/analyst-ui
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          CI: "false" # keep Next.js non-blocking for warnings
+        run: |
+          npm install
+          npm run build

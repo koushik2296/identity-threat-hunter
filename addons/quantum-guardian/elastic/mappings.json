@@ -1,0 +1,100 @@
+{
+  "mappings": {
+    "dynamic": "true",
+    "properties": {
+      "event": {
+        "properties": {
+          "module": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "time": {
+            "type": "date"
+          }
+        }
+      },
+      "identity": {
+        "properties": {
+          "user": {
+            "type": "keyword"
+          },
+          "issuer": {
+            "type": "keyword"
+          },
+          "session_id": {
+            "type": "keyword"
+          }
+        }
+      },
+      "token": {
+        "properties": {
+          "alg": {
+            "type": "keyword"
+          },
+          "key_bits": {
+            "type": "integer"
+          },
+          "curve": {
+            "type": "keyword"
+          },
+          "issued_at": {
+            "type": "date"
+          },
+          "expires_at": {
+            "type": "date"
+          },
+          "rotation_days": {
+            "type": "integer"
+          },
+          "device_bound": {
+            "type": "boolean"
+          },
+          "scopes": {
+            "type": "keyword"
+          }
+        }
+      },
+      "crypto_profile": {
+        "properties": {
+          "alg_family": {
+            "type": "keyword"
+          },
+          "algorithm_risk": {
+            "type": "integer"
+          }
+        }
+      },
+      "qes": {
+        "properties": {
+          "score": {
+            "type": "float"
+          },
+          "factors": {
+            "properties": {
+              "token_age_days": {
+                "type": "float"
+              },
+              "algorithm_risk": {
+                "type": "float"
+              },
+              "scope_sensitivity": {
+                "type": "float"
+              },
+              "device_binding_gap": {
+                "type": "float"
+              },
+              "rotation_gap": {
+                "type": "float"
+              },
+              "issuer_policy_gap": {
+                "type": "float"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

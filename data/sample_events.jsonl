@@ -1,0 +1,2 @@
+{"@timestamp":"2025-09-29T12:00:00Z","user":{"id":"alice","name":"Alice"},"src":{"ip":"8.8.8.8","geo":{"lat":40.7128,"lon":-74.0060,"country":"US","city":"New York"}},"device":{"fingerprint":"fp-123"},"asn":15169,"event":{"kind":"authentication","action":"login"}}
+{"@timestamp":"2025-09-29T13:30:00Z","user":{"id":"alice","name":"Alice"},"src":{"ip":"1.1.1.1","geo":{"lat":51.5074,"lon":-0.1278,"country":"GB","city":"London"}},"device":{"fingerprint":"fp-123"},"asn":13335,"event":{"kind":"authentication","action":"login"}}

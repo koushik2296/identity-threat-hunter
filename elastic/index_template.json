@@ -1,0 +1,85 @@
+{
+  "index_templates": [
+    {
+      "name": "ith-template",
+      "index_template": {
+        "index_patterns": [
+          "ith-events*"
+        ],
+        "template": {
+          "settings": {
+            "number_of_shards": 1
+          },
+          "mappings": {
+            "dynamic": "true",
+            "properties": {
+              "@timestamp": {
+                "type": "date"
+              },
+              "user": {
+                "properties": {
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "src": {
+                "properties": {
+                  "ip": {
+                    "type": "ip"
+                  },
+                  "geo": {
+                    "properties": {
+                      "lat": {
+                        "type": "float"
+                      },
+                      "lon": {
+                        "type": "float"
+                      },
+                      "country": {
+                        "type": "keyword"
+                      },
+                      "city": {
+                        "type": "keyword"
+                      }
+                    }
+                  }
+                }
+              },
+              "device": {
+                "properties": {
+                  "fingerprint": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "asn": {
+                "type": "integer"
+              },
+              "event": {
+                "properties": {
+                  "kind": {
+                    "type": "keyword"
+                  },
+                  "action": {
+                    "type": "keyword"
+                  },
+                  "risk_score": {
+                    "type": "float"
+                  },
+                  "explanation": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "priority": 500
+      }
+    }
+  ]
+}
