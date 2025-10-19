@@ -1,105 +1,122 @@
-# Identity Threat Hunter (ITH) — Technical Runbook
-Live Website: https://koushik2296.github.io/identity-threat-hunter/
-## Detection Rule Definitions (Full List)
+# Identity Threat Hunter — Technical Runbook (Full, step-by-step)
 
-| Rule | What it detects | Severity |
-|---|---|---|
-| ITH – Rare Country Login | Detects logins originating from unusual or first‑seen countries. | Medium |
-| ITH – Privilege Escalation | Detects post‑login privilege or role elevation events. | High |
-| ITH – ASN / ISP Change | ITH – ASN / ISP Change | High |
-| ITH – MFA Bypass | Detects successful authentications that appear to bypass expected MFA. | High |
-| ITH – Credential Stuffing | Detects many login attempts across multiple accounts from a single source. | High |
-| ITH – Brute Force Then Success | Detects multiple failures followed by a success from the same source. | High |
-| ITH – All Scenarios (Judge Demo) | See Elastic rule for full detection logic. | High |
-| ITH - First Seen Admin Tool on Host | Flags the first observed execution of selected admin tools per host in ITH indices. | Medium |
-| ITH – Impossible Travel | Detects logins from geographically distant locations within a short time window. | High |
-| ITH Honey-Identity Trap Detection | Detects honeypot/canary events from Identity Threat Hunter. | Critical |
-| ITH – Quantum Adaptive Response | Triggers adaptive live OSquery investigation when a high-risk identity event is detected. | Low |
-| Suspicious PowerShell (AutoTriage) | Suspicious PowerShell (AutoTriage) | High |
-| ITH - Quantum Guardian High-Risk Finding | Surfaces high/critical Quantum Guardian findings or risk_score >= 70. | High |
-| ITH High Risk Score (>= 90) | Any event with risk.score >= 90. | High |
-| ITH Impossible Travel | ITH Impossible Travel | Critical |
-| ITH Canary Username Touched | Any event involving a canary user (user.name starts with canary-). | Critical |
-| ITH - Possible Brute-Force (source.ip + user.name) | Counts failed authentications per source.ip and user.name over the interval in ITH indices. | Medium |
-| ITH – Impossible Travel (Custom, with Response Actions) | Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend. | High |
-| Quantum Guardian – High QES | Quantum Guardian – High QES | Low |
-| ITH Honey Token Used | Detects canary token usage events. | Critical |
-| ITH - VSS Deleted via vssadmin | Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices. | Critical |
-| ITH Canary User Login Attempt (Failure) | Detects canary user login attempts that failed. | Critical |
-| ITH – Smoke Test (mfa_bypass) | ITH – Smoke Test (mfa_bypass) | Low |
-| ITH Suspicious Test IP Ranges (Demo) | Matches RFC5737 example IPs used in demo honey events. | Medium |
-| ITH Alert Webhook | See Elastic rule for full detection logic. | — |
-
-
-Detailed deployment, configuration, and testing instructions for the Identity Threat Hunter (ITH) platform.
+## Overview
+This runbook provides a complete sequence of steps so any user can clone this repository, deploy Identity Threat Hunter (ITH) components to Google Cloud Run, configure Elastic Cloud, and test alert generation. Each step includes expected results and troubleshooting notes.
 
 ---
 
-## Prerequisites
-
-- Google Cloud project with billing enabled  
-- Elastic Cloud deployment with Elasticsearch + Kibana  
-- gcloud CLI authenticated  
-- PowerShell or bash shell environment  
+## A. Prerequisites
+1. Google Cloud project with billing enabled and IAM roles for deployment (Owner/Editor).
+2. Elastic Cloud deployment with Elasticsearch + Kibana.
+3. Installed tools: `git`, `gcloud`, `jq`, `curl`, and (optional) PowerShell.
+4. APIs enabled:
+   ```bash
+   gcloud services enable cloudbuild.googleapis.com run.googleapis.com iam.googleapis.com secretmanager.googleapis.com
+   ```
+5. Create a service account for deployment:
+   ```bash
+   gcloud iam service-accounts create ith-deployer --display-name "ITH Deployer"
+   gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:ith-deployer@$PROJECT.iam.gserviceaccount.com" --role="roles/run.admin"
+   gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:ith-deployer@$PROJECT.iam.gserviceaccount.com" --role="roles/cloudbuild.builds.editor"
+   gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:ith-deployer@$PROJECT.iam.gserviceaccount.com" --role="roles/secretmanager.secretAccessor"
+   ```
 
 ---
 
-## Deploy Services
-
-```powershell
-$PROJECT = "ith-koushik-hackathon"
-$REGION  = "us-central1"
-$TAG     = (Get-Date -Format "yyyyMMddHHmmss")
+## B. Clone the repository
+```bash
+git clone https://github.com/<your-org>/identity-threat-hunter.git
+cd identity-threat-hunter
+ls -la
 ```
+**Expected:** Directories `services/ingestor`, `services/analyst-ui`, and `addons/quantum-guardian` appear.
 
-### Ingestor
+---
 
-```powershell
-gcloud builds submit services/ingestor --tag "gcr.io/$PROJECT/ith-ingestor:$TAG"
-gcloud run deploy ith-ingestor --image "gcr.io/$PROJECT/ith-ingestor:$TAG" `
-  --region $REGION --allow-unauthenticated `
-  --set-env-vars "ELASTIC_CLOUD_URL=<ELASTIC_URL>,ELASTIC_API_KEY=<ELASTIC_KEY>,ELASTIC_INDEX=ith-events"
-```
+## C. Environment setup
+```bash
+export PROJECT="ith-koushik-hackathon"
+export REGION="us-central1"
+export TAG="$(date +%Y%m%d%H%M%S)"
+export GCR_HOST="gcr.io/$PROJECT"
 
-### Analyst UI
-
-```powershell
-gcloud builds submit services/analyst-ui --tag "gcr.io/$PROJECT/ith-ui:$TAG"
-gcloud run deploy ith-ui --image "gcr.io/$PROJECT/ith-ui:$TAG" `
-  --region $REGION --allow-unauthenticated `
-  --set-env-vars "INGEST_URL=https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest"
-```
-
-### Quantum Guardian
-
-```powershell
-gcloud builds submit addons/quantum-guardian --tag "gcr.io/$PROJECT/quantum-guardian:$TAG"
-gcloud run deploy quantum-guardian --image "gcr.io/$PROJECT/quantum-guardian:$TAG" `
-  --region $REGION --allow-unauthenticated `
-  --set-env-vars "ELASTIC_CLOUD_URL=<ELASTIC_URL>,ELASTIC_API_KEY=<ELASTIC_KEY>,ELASTIC_INDEX_TARGET=quantum-guardian"
+gcloud auth login
+gcloud config set project $PROJECT
+gcloud config set run/region $REGION
 ```
 
 ---
 
-## Elastic Configuration
+## D. Elastic Cloud configuration
+1. Create Elasticsearch + Kibana deployment.
+2. Create an API key in Kibana → Stack Management → Security → API Keys.
+3. Save:
+   - `ELASTIC_CLOUD_URL`
+   - `ELASTIC_API_KEY`
+4. Test connection:
+   ```bash
+   curl -s -H "Authorization: ApiKey <ELASTIC_API_KEY>" "$ELASTIC_CLOUD_URL/_cluster/health" | jq .
+   ```
 
-- Data Views: `ith-events*`, `ith-events-enriched*`, `quantum-guardian*`  
-- Import rule file: `ITH_Baseline7_Rules.ndjson` via **Security → Rules → Import → Enable all**  
-- Verify alerts after scenario triggers.
-- Judge login is pre-configured in the default space with read-only access (user: ith_judge, password: Hackathon2025).
-- If Honey or Quantum return 404 or 500, verify the corresponding API route files (trigger-honey.js, trigger-quantum.js) exist in the Analyst UI service.
 ---
 
-## Testing and Triggers
+## E. Secrets management
+```bash
+echo -n "<ELASTIC_API_KEY>" | gcloud secrets create elastic-api-key --data-file=-
+gcloud secrets versions add elastic-api-key --data-file=<(echo -n "<ELASTIC_API_KEY>")
+```
 
-### UI Testing
+---
 
-Open https://ith-ui-1054075376433.us-central1.run.app and click scenario buttons.
+## F. Deploy services
 
-### PowerShell Direct Trigger
+### 1. Ingestor
+```bash
+cd services/ingestor
+gcloud builds submit . --tag "$GCR_HOST/ith-ingestor:$TAG"
+gcloud run deploy ith-ingestor --image "$GCR_HOST/ith-ingestor:$TAG"   --region $REGION --allow-unauthenticated   --set-env-vars "ELASTIC_CLOUD_URL=<ELASTIC_URL>,ELASTIC_API_KEY=<ELASTIC_KEY>,ELASTIC_INDEX=ith-events"
+```
+**Expected:** URL displayed (save as `$INGEST_URL`).
 
+**Test:**
+```bash
+curl -i -X POST "$INGEST_URL/ingest" -H "Content-Type: application/json" -d '{"@timestamp":"2025-10-18T00:00:00Z","event":{"category":"test"},"message":"itest"}'
+```
+
+### 2. Analyst UI
+```bash
+cd ../../services/analyst-ui
+gcloud builds submit . --tag "$GCR_HOST/ith-ui:$TAG"
+gcloud run deploy ith-ui --image "$GCR_HOST/ith-ui:$TAG"   --region $REGION --allow-unauthenticated   --set-env-vars "INGEST_URL=<INGEST_URL>"
+```
+**Expected:** UI loads successfully.
+
+### 3. Quantum Guardian
+```bash
+cd ../../addons/quantum-guardian
+gcloud builds submit . --tag "$GCR_HOST/quantum-guardian:$TAG"
+gcloud run deploy quantum-guardian --image "$GCR_HOST/quantum-guardian:$TAG"   --region $REGION --allow-unauthenticated   --set-env-vars "ELASTIC_CLOUD_URL=<ELASTIC_URL>,ELASTIC_API_KEY=<ELASTIC_KEY>,ELASTIC_INDEX_TARGET=quantum-guardian"
+```
+
+---
+
+## G. Import detection rules
+1. In Kibana: **Security → Rules → Import** → upload `ITH_Baseline7_Rules.ndjson`.
+2. Enable all rules.
+3. Create Data Views: `ith-events*`, `ith-events-enriched*`, `quantum-guardian*`.
+
+---
+
+## H. Trigger tests
+
+### Smoke Test
+```bash
+curl -X POST "$INGEST_URL/ingest" -H "Content-Type: application/json" -d '{"@timestamp":"2025-10-18T00:00:00Z","event":{"category":"authentication","action":"smoke_test","outcome":"success"},"user":{"name":"manual_test"},"source":{"ip":"198.51.100.60"},"risk":{"score":10}}'
+```
+
+### Impossible Travel
 ```powershell
-$IG = "https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest"
+$IG = "https://ith-ingestor-<id>.run.app/ingest"
 $doc = @{
   "@timestamp" = (Get-Date).ToUniversalTime().ToString("o")
   event = @{ category="authentication"; action="login"; outcome="success"; kind="event" }
@@ -111,45 +128,86 @@ $doc = @{
 Invoke-RestMethod -Method POST $IG -ContentType "application/json" -Body $doc
 ```
 
-### Honey Identity
-
-```powershell
-Invoke-RestMethod -Method POST "https://ith-ui-1054075376433.us-central1.run.app/api/trigger-honey?type=canary_user_probe"
-Invoke-RestMethod -Method POST "https://ith-ui-1054075376433.us-central1.run.app/api/trigger-honey?type=canary_token_use"
-```
-
 ### Quantum Guardian
-
-```powershell
-Invoke-RestMethod -Method POST "https://ith-ui-1054075376433.us-central1.run.app/api/trigger-quantum"
+```bash
+curl -X POST "https://<ith-ui-url>/api/trigger-quantum"
 ```
 
 ---
 
-## Troubleshooting
-
-- No alerts: verify data indexed, rule schedule active  
-- CORS error: ensure middleware in Event‑Gen  
-- Startup issues: review Cloud Logging for missing env vars  
+## I. Validation
+- Verify alerts in Kibana → **Security → Alerts**.
+- KQL example:
+  ```
+  event.category:authentication and event.scenario:impossible_travel
+  ```
+- Expected fields: `rule.name`, `risk.score`, `source.ip`.
 
 ---
 
-## Cleanup
+## J. Troubleshooting
+| Issue | Check |
+|-------|--------|
+| No alerts | Rule enabled and scheduled; event indexed |
+| 404 Not Found | Wrong service URL path |
+| 401 Unauthorized | Invalid or expired API key |
+| CORS errors | Configure Access-Control-Allow-Origin headers |
+| Cloud Build fails | Run `gcloud builds log <id>` |
 
-```powershell
-gcloud run services delete ith-ui --region $REGION
-gcloud run services delete ith-ingestor --region $REGION
-gcloud run services delete ith-alert --region $REGION
-gcloud run services delete ith-event-gen --region $REGION
-gcloud run services delete ith-digital-twin --region $REGION
-gcloud run services delete quantum-guardian --region $REGION
+---
+
+## K. Cleanup
+```bash
+gcloud run services delete ith-ui --region $REGION --project $PROJECT
+gcloud run services delete ith-ingestor --region $REGION --project $PROJECT
+gcloud run services delete quantum-guardian --region $REGION --project $PROJECT
+gcloud secrets delete elastic-api-key
 ```
 
 ---
 
-## Verification Checklist
+## L. Environment Template
+`.env.template`
+```
+PROJECT=ith-koushik-hackathon
+REGION=us-central1
+ELASTIC_CLOUD_URL=cloud-id:...
+ELASTIC_API_KEY=REPLACE_WITH_SECRET
+INGEST_URL=https://<ith-ingestor>.run.app/ingest
+JUDGE_USERNAME=ith_judge
+# JUDGE_PASSWORD stored in Secret Manager
+```
 
-- Events visible under `ith-events*`  
-- Alerts fire for each baseline rule  
-- Honey and Quantum triggers generate expected alerts  
-- All endpoints reachable without authentication
+---
+
+## M. CI/CD (GitHub Actions Example)
+```yaml
+name: Deploy ITH
+on: [push]
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - run: gcloud builds submit services/ingestor --tag "gcr.io/${{ secrets.GCP_PROJECT }}/ith-ingestor:${{ github.run_number }}"
+      - run: gcloud run deploy ith-ingestor --image "gcr.io/${{ secrets.GCP_PROJECT }}/ith-ingestor:${{ github.run_number }}" --region us-central1 --allow-unauthenticated
+```
+
+---
+
+## N. Checklist
+- [ ] Clone repo
+- [ ] Configure env variables
+- [ ] Deploy all services
+- [ ] Import Elastic rules
+- [ ] Trigger tests
+- [ ] Verify alerts
+- [ ] Cleanup resources
+
+---
+
+## End of Runbook
