@@ -1,23 +1,23 @@
+
 # Identity Threat Hunter (ITH)
+
 Live Website: https://koushik2296.github.io/identity-threat-hunter/
 
-Identity Threat Hunter (ITH) is a professional, cloud-native identity-security analytics platform built on **Google Cloud Run** and **Elastic Cloud**. It ingests authentication events, enriches them with contextual and behavioral intelligence, and generates real-time alerts for identity-based threat scenarios.
+Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics platform built on **Google Cloud Run** and **Elastic Cloud** with **Vertex AI** enrichment. It ingests authentication events, enriches them with AI‑generated context and scenarios, and generates real‑time alerts for identity‑driven threats.
 
 ---
 
 ## Architecture Overview
 
 ```
-[User / Judge] → ith-ui (Analyst UI)
+[User / Judge] → ith-ui (Analyst UI, Cloud Run)
                   │
-                  ├──> ith-event-gen → ith-ingestor → Elastic Cloud (ith-events)
-                  │                                   │
-                  │                                   ├─ Digital Twin
-                  │                                   ├─ Honey Identity
-                  │                                   ├─ Quantum Guardian
-                  │                                   └─ Kibana Alerts
+                  ├──> ith-event-gen → ith-ingestor ──► Elastic Cloud (ith-events*)
+                  │                        │
+                  │                        └─► Vertex AI (Gemini) ⇢ ai.summary / ai.confidence / event.scenario
                   │
-                  └──> ith-alert (Webhook Integration)
+                  ├──> quantum-guardian ──► Elastic (quantum-guardian*)
+                  └──> Kibana (Rules & Alerts)
 ```
 
 ---
@@ -25,47 +25,62 @@ Identity Threat Hunter (ITH) is a professional, cloud-native identity-security a
 ## Services
 
 | Service | Purpose | Deployment |
-|----------|----------|------------|
+|---|---|---|
 | **ith-ui** | Analyst interface for scenario triggers and demonstrations. | https://ith-ui-1054075376433.us-central1.run.app |
-| **ith-ingestor** | FastAPI endpoint receiving events and indexing to Elastic. | https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest |
-| **ith-event-gen** | Synthetic event generator for identity-based attack simulations. | https://ith-event-gen-wcax3xalza-uc.a.run.app |
-| **ith-digital-twin** | Behavioral modeling and deviation scoring. | Cloud Run: ith-digital-twin |
-| **ith-alert** | Alert webhook receiver and optional Slack forwarder. | Cloud Run: ith-alert |
-| **quantum-guardian** | Evaluates cryptographic exposure risk (Quantum Exposure Score – QES). | https://quantum-guardian-1054075376433.us-central1.run.app |
+| **ith-ingestor** | Receives events, calls Vertex AI to enrich, indexes to Elastic. | https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest |
+| **ith-event-gen** | Synthetic event generator for attack simulations. | https://ith-event-gen-wcax3xalza-uc.a.run.app |
+| **quantum-guardian** | Produces cryptographic exposure findings (QES). | https://quantum-guardian-1054075376433.us-central1.run.app |
+| **ith-alert** | Optional webhook receiver for alert actions. | Cloud Run: ith-alert |
+
+---
+
+## AI Module (Vertex AI Enrichment)
+
+- **Model:** Gemini via Vertex AI (Google Cloud only — compliant with hackathon AI rules).
+- **Fields added to events:**
+
+```json
+{
+  "ai.enriched": true,
+  "ai.summary": "Detected impossible travel with inconsistent MFA patterns",
+  "ai.confidence": 0.93,
+  "event.scenario": "impossible_travel",
+  "rule.explanation": "AI fusion: correlated geo anomaly and password spraying indicators"
+}
+```
 
 ---
 
 ## Key Capabilities
 
-- Seven detection rules covering major identity attack vectors.
-- Digital Twin enrichment for user-behavior baselines.
-- Honey Identity traps for decoy user and token monitoring.
-- Quantum Guardian module for token cryptographic risk.
-- Centralized dashboards and rule-based alerts via Elastic Security.
+- Seven baseline identity detections + Honey Identity traps.
+- AI‑generated risk explanations on alerts (<code>rule.explanation</code>).
+- Quantum Guardian module (QES scoring) as an add‑on.
+- Dashboards and rule‑based alerts via Elastic Security.
 
 ---
 
 ## Technology Stack
 
-- **Compute:** Google Cloud Run (FastAPI, Next.js)
+- **Compute:** Google Cloud Run (FastAPI / Node.js)
+- **AI:** Vertex AI (Gemini) — no non‑Google AI services used
 - **Data:** Elastic Cloud (Elasticsearch + Kibana)
-- **Language:** Python 3.10 / Node.js 20
 - **CI/CD:** Google Cloud Build
 - **Observability:** Cloud Logging, Elastic Dashboards
 
 ---
 
-## Judge Access (Read-Only)
+## Judge Access (Read‑Only)
 
 | Resource | Link |
-|-----------|------|
-| **Kibana Alerts (Default Space)** | [https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts](https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts) |
+|---|---|
+| **Kibana Alerts (Default Space)** | https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts |
 | **ITH UI (Cloud Run)** | https://ith-ui-1054075376433.us-central1.run.app |
 
 **Judge Credentials**  
 Username: `ith_judge`  
 Password: `Hackathon2025`  
-Access: Read-only (Security → Alerts, Discover)  
+Access: Read‑only (Security → Alerts, Discover)
 
 ---
 
@@ -73,9 +88,10 @@ Access: Read-only (Security → Alerts, Discover)
 
 ### Prerequisites
 - Active Google Cloud Project (billing enabled)
+- Enable APIs: Cloud Build, Cloud Run, IAM, Secret Manager, **Vertex AI**
 - Elastic Cloud deployment (Elasticsearch + Kibana)
-- API Key for Elastic Cloud
-- gcloud CLI installed and authenticated
+- Elastic API Key
+- gcloud CLI authenticated
 
 ### Deployment Steps
 
@@ -85,85 +101,63 @@ Access: Read-only (Security → Alerts, Discover)
    cd identity-threat-hunter
    ```
 
-2. **Deploy Ingestor Service**
+2. **Set environment**
    ```bash
-   gcloud run deploy ith-ingestor \
-     --project <YOUR_GCP_PROJECT> \
-     --region us-central1 \
-     --source ./services/ingestor \
-     --allow-unauthenticated \
-     --set-env-vars ELASTIC_CLOUD_URL=<ELASTIC_URL>,ELASTIC_API_KEY=<API_KEY>,ELASTIC_INDEX=ith-events
+   export PROJECT="<YOUR_GCP_PROJECT>"
+   export REGION="us-central1"
+   export ELASTIC_CLOUD_URL="<ELASTIC_URL>"
+   export ELASTIC_API_KEY="<ELASTIC_API_KEY>"
+   export VERTEX_LOCATION="us-central1"
+   export VERTEX_MODEL="gemini-1.5-pro"   # example
    ```
 
-3. **Deploy Event Generator**
+3. **Deploy Ingestor (AI‑enriched)**
    ```bash
-   gcloud run deploy ith-event-gen \
-     --project <YOUR_GCP_PROJECT> \
-     --region us-central1 \
-     --source ./services/event-gen \
-     --allow-unauthenticated \
-     --set-env-vars INGEST_URL=<ITH_INGESTOR_URL>/ingest
+   gcloud run deploy ith-ingestor      --project $PROJECT      --region $REGION      --source ./services/ingestor      --allow-unauthenticated      --set-env-vars ELASTIC_CLOUD_URL=$ELASTIC_CLOUD_URL,ELASTIC_API_KEY=$ELASTIC_API_KEY,ELASTIC_INDEX=ith-events,VERTEX_LOCATION=$VERTEX_LOCATION,VERTEX_MODEL=$VERTEX_MODEL
    ```
 
-4. **Deploy Optional Services** (`ith-ui`, `ith-alert`, `quantum-guardian`, `ith-digital-twin`)
+4. **Deploy Event Generator**
    ```bash
-   gcloud run deploy ith-ui --project <YOUR_GCP_PROJECT> --region us-central1 --source ./services/ith-ui --allow-unauthenticated
+   gcloud run deploy ith-event-gen      --project $PROJECT      --region $REGION      --source ./services/event-gen      --allow-unauthenticated      --set-env-vars INGEST_URL=$(gcloud run services describe ith-ingestor --region $REGION --format="value(status.url)")/ingest
    ```
 
-5. **Configure Kibana Data View**
-   - Go to *Kibana → Stack Management → Data Views*
-   - Add `ith-events*` with `@timestamp`
+5. **Deploy Optional Services** (`ith-ui`, `quantum-guardian`, `ith-alert`)
+   ```bash
+   gcloud run deploy ith-ui --project $PROJECT --region $REGION --source ./services/ith-ui --allow-unauthenticated
+   gcloud run deploy quantum-guardian --project $PROJECT --region $REGION --source ./addons/quantum-guardian --allow-unauthenticated
+   ```
 
-6. **Import Detection Rules**
-   - *Kibana → Security → Rules → Import →* select the provided `rules.json`
-   - Enable all rules.
+6. **Kibana Data Views**
+   - *Stack Management → Data Views* — add `ith-events*` and `quantum-guardian*` with `@timestamp`
+
+7. **Import Detection Rules**
+   - *Security → Rules → Import* — import `rules.json` and enable all
 
 ---
 
-## Demonstration (Synthetic Alert Burst)
-
-Use the **Burst Trigger** PowerShell script to generate test alerts.
+## Synthetic Alert Burst (Demo)
 
 ```powershell
-$IngestUrl = "https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest"
+$IngestUrl = "<ITH_INGESTOR_URL>/ingest"
 .\scripts\ITH_Burst_Trigger.ps1 -Mode ingestor -IngestUrl $IngestUrl -BurstSeconds 60
 ```
 
-Expected alerts:
-- Credential stuffing
-- Impossible travel
-- VSS shadow tampering
-- Honey Identity activity
-
-> Verify detections under **Security → Alerts** in Kibana.
-
----
-
-## Repository Structure
-
-```
-/services
-  /ingestor           - Cloud Run: Receives JSON events and writes to Elastic
-  /event-gen          - Cloud Run: Generates synthetic identity events
-  /alert-webhook      - Cloud Run: Handles rule response actions
-  /ith-ui             - Cloud Run: Web interface for judges
-/rules                - Elastic detection rules (JSON)
-/scripts              - PowerShell trigger scripts
-/runbook              - Judge runbook and instructions
-```
+Expected AI fields in **Discover** on `ith-events*`:
+- `ai.enriched:true`, `ai.summary`, `ai.confidence`, `event.scenario`
+- Alerts show `rule.explanation`
 
 ---
 
 ## Troubleshooting
 
-- **Events visible but no alerts:** Verify rule index pattern and scheduling.
+- **Events but no alerts:** Check rule index pattern and schedule.
+- **Missing AI fields:** Ensure `VERTEX_MODEL`/`VERTEX_LOCATION` are set and service account has `roles/aiplatform.user`.
 - **Kibana session errors:** Use Chrome Incognito or clear cookies for the Elastic domain.
-- **Slow push or Git errors:** Large binaries were removed; keep them out via `.gitignore`.
 
 ---
 
 ## License
 
-Apache-2.0
+Apache‑2.0
 
-_Last updated: 2025-10-18_
+_Last updated: 2025‑10‑19_
