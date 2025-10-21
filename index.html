@@ -49,15 +49,28 @@
 <section class="section" id="overview">
   <div class="container">
     <h2>Overview</h2>
-    <p>ITH ingests authentication activity, performs <strong>AI enrichment via Vertex AI</strong> for risk summaries and scenarios, and raises real-time alerts for identity-based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
+    <p>
+      Identity Threat Hunter (ITH) is an end-to-end, cloud-native platform for detecting, analyzing, and explaining identity-driven threats.
+      It simulates diverse authentication scenarios—such as credential stuffing, MFA fatigue, and honey-identity triggers—and ingests them into
+      <strong>Elastic Security</strong> through a serverless pipeline on <strong>Google Cloud Run</strong>. Alerts are enriched in real time by
+      <strong>Vertex AI</strong>, which generates human-readable <code>ai.summary</code>, behavioral <code>ai.signals</code>, and risk
+      <code>ai.confidence</code> metrics for every detection.
+    </p>
+    <p>
+      Designed for enterprise scale, ITH connects the strengths of AI analytics with Elastic’s detection engine to provide transparent, explainable
+      identity intelligence. It supports rapid triage, security automation, and SOC enablement—all with synthetic, privacy-safe data for
+      demonstration and benchmarking.
+    </p>
     <ul class="check">
-      <li>AI summaries (<code>ai.summary</code>) and confidence (<code>ai.confidence</code>)</li>
-      <li>Seven baseline identity detections + Honey Identity</li>
-      <li>Quantum Guardian add-on (QES)</li>
-      <li>Judge-ready links &amp; read-only access</li>
+      <li>AI-generated summaries (<code>ai.summary</code>), signals (<code>ai.signals</code>), and confidence (<code>ai.confidence</code>) per alert</li>
+      <li>Full Elastic integration with rules, risk scores, and timeline view</li>
+      <li>Cloud-run microservices: Event Generator, Ingestor, Analyst UI, Quantum Guardian</li>
+      <li>Safe synthetic data for demos—no production or PII exposure</li>
+      <li>Judge-ready interactive dashboards and one-click burst simulations</li>
     </ul>
   </div>
 </section>
+
 <section class="section" id="architecture">
   <div class="container">
     <h2>Architecture</h2>
