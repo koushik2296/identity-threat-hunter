@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,21 +50,25 @@
   </div>
 </section>
 
+<!-- Overview section -->
 <section class="section" id="overview">
-  <div class="container grid-2">
-    <div>
-      <h2>Overview</h2>
-      <p>ITH ingests authentication activity, performs <strong>AI enrichment via Vertex AI</strong> for risk summaries and scenarios, and raises real‑time alerts for identity‑based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
-      <ul class="check">
-        <li>AI summaries (<code>ai.summary</code>) and confidence (<code>ai.confidence</code>)</li>
-        <li>Seven baseline identity detections + Honey Identity</li>
-        <li>Quantum Guardian add‑on (QES)</li>
-        <li>Judge‑ready links &amp; read‑only access</li>
-      </ul>
-    </div>
-    <div class="card">
-      <h3>Architecture (at a glance)</h3>
-<pre class="ascii">
+  <div class="container">
+    <h2>Overview</h2>
+    <p>ITH ingests authentication activity, performs <strong>AI enrichment via Vertex AI</strong> for risk summaries and scenarios, and raises real-time alerts for identity-based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
+    <ul class="check">
+      <li>AI summaries (<code>ai.summary</code>) and confidence (<code>ai.confidence</code>)</li>
+      <li>Seven baseline identity detections + Honey Identity</li>
+      <li>Quantum Guardian add-on (QES)</li>
+      <li>Judge-ready links &amp; read-only access</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Architecture section -->
+<section class="section" id="architecture">
+  <div class="container">
+    <h2>Architecture</h2>
+    <pre class="ascii">
 [User/Judge] → ith-ui (Cloud Run, Analyst UI)
                   │
                   ├→ ith-event-gen → ith-ingestor ──► Elastic (ith-events*)
@@ -75,8 +78,7 @@
                   ├→ quantum-guardian ──► Elastic (quantum-guardian*)
                   │
                   └→ Kibana Alerts (Elastic Security)
-</pre>
-    </div>
+    </pre>
   </div>
 </section>
 
