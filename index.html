@@ -69,80 +69,21 @@
   </div>
 </div>
 <h2>Architecture</h2>
-<p>The platform is decomposed into small services connected by HTTPS and Elastic APIs. Below is the high‑level flow and the major components.</p>
-
-<div class="card">
-  <h3>Data Flow (1 → 6)</h3>
-  <ol class="num">
-    <li><strong>Event Generator / Burst</strong> creates realistic identity events (e.g., brute force → success, impossible travel, rare ASN, honey identity probe).</li>
-    <li><strong>Ingestor (Cloud Run)</strong> receives JSON (<code>/ingest</code>), validates/normalizes, and writes to <code>ith-events*</code>.</li>
-    <li><strong>Elastic Detections</strong> run continuously using your rule pack (Baseline + Extended).</li>
-    <li><strong>AI Enrichment (Vertex AI)</strong> summarizes signals, extracts indicators, assigns confidence, and emits <code>ai.*</code> fields.</li>
-    <li><strong>Analyst UI</strong> and <strong>Kibana Alerts</strong> render detections, explanations, and timelines for judges.</li>
-    <li><strong>Response</strong> (optional) can call back to SOAR/Slack/Webhooks; demo focuses on visibility and clarity.</li>
+<div class="arch-simple">
+  <div class="arch-steps">
+    <div class="arch-pill"><strong>1) Event Generator</strong></div><div class="arch-arrow">→</div>
+    <div class="arch-pill"><strong>2) Ingestor (Cloud Run)</strong></div><div class="arch-arrow">→</div>
+    <div class="arch-pill"><strong>3) Elastic Detections</strong></div><div class="arch-arrow">→</div>
+    <div class="arch-pill"><strong>4) Vertex AI Enrichment</strong></div><div class="arch-arrow">→</div>
+    <div class="arch-pill"><strong>5) Analyst UI / Kibana</strong></div>
+  </div>
+  <ol class="num" style="margin-top:10px">
+    <li><em>Event Generator</em> sends synthetic identity events for scenarios (credential‑stuffing, brute‑force→success, impossible travel, ASN change, honey‑identity).</li>
+    <li><em>Ingestor</em> validates JSON, normalizes fields, indexes into <code>ith‑events*</code>.</li>
+    <li><em>Elastic Detections</em> evaluate all rules (Baseline + Extended) and attach <code>rule.explanation</code>, risk, tags.</li>
+    <li><em>Vertex AI</em> writes <code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code> for analyst context.</li>
+    <li><em>Analyst UI / Kibana</em> provide triage, filters, and timelines for judges.</li>
   </ol>
-</div>
-
-<div class="diagram" aria-label="ITH Architecture Diagram">
-<svg viewBox="0 0 980 420" role="img" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .box{fill:#ffffff;stroke:#d1d5db;stroke-width:1.2}
-    .title{font-family:Inter,system-ui,Segoe UI,Arial;font-size:13px;font-weight:700;fill:#111827}
-    .text{font-family:Inter,system-ui,Segoe UI,Arial;font-size:12px;fill:#374151}
-    .arrow{stroke:#9CA3AF;stroke-width:1.5;marker-end:url(#a)}
-  </style>
-  <defs>
-    <marker id="a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L6,3 L0,6 z" fill="#9CA3AF"/>
-    </marker>
-  </defs>
-
-  <rect class="box" x="20" y="40" width="200" height="90" rx="12"/><text class="title" x="35" y="65">Event Generator / Burst</text>
-  <text class="text" x="35" y="85">Scenarios: brute-force→success, impossible</text>
-  <text class="text" x="35" y="102">travel, rare country/ASN, honey identity</text>
-
-  <rect class="box" x="250" y="40" width="190" height="90" rx="12"/><text class="title" x="265" y="65">Ingestor (Cloud Run)</text>
-  <text class="text" x="265" y="85">POST /ingest → ith-events*</text>
-  <text class="text" x="265" y="102">Normalize, add metadata</text>
-
-  <rect class="box" x="470" y="40" width="190" height="90" rx="12"/><text class="title" x="485" y="65">Elastic Detections</text>
-  <text class="text" x="485" y="85">Rule pack: Baseline + Extended</text>
-  <text class="text" x="485" y="102">rule.explanation, risk score</text>
-
-  <rect class="box" x="690" y="40" width="190" height="90" rx="12"/><text class="title" x="705" y="65">AI Enrichment (Vertex AI)</text>
-  <text class="text" x="705" y="85">ai.summary, ai.signals, ai.confidence</text>
-
-  <rect class="box" x="250" y="170" width="290" height="90" rx="12"/><text class="title" x="265" y="195">Analyst UI (Cloud Run)</text>
-  <text class="text" x="265" y="215">Judge-friendly views, trigger tools</text>
-
-  <rect class="box" x="570" y="170" width="310" height="90" rx="12"/><text class="title" x="585" y="195">Kibana (Elastic Security → Alerts)</text>
-  <text class="text" x="585" y="215">Filters, timelines, fields, tags</text>
-
-  <line class="arrow" x1="220" y1="85" x2="250" y2="85"/>
-  <line class="arrow" x1="440" y1="85" x2="470" y2="85"/>
-  <line class="arrow" x1="660" y1="85" x2="690" y2="85"/>
-  <line class="arrow" x1="350" y1="130" x2="350" y2="170"/>
-  <line class="arrow" x1="565" y1="130" x2="725" y2="170"/>
-</svg>
-</div>
-
-<div class="grid-2">
-  <div class="card">
-    <h3>Core Microservices</h3>
-    <ul class="dash">
-      <li><strong>Event Generator</strong>: CLI + website link; supports <em>Trigger All (Burst)</em>.</li>
-      <li><strong>Ingestor</strong>: Cloud Run (Python/FastAPI); validates JSON and writes to <code>ith-events*</code>.</li>
-      <li><strong>Analyst UI</strong>: Cloud Run front-end for quick filters and judge-friendly visuals.</li>
-    </ul>
-  </div>
-  <div class="card">
-    <h3>AI & Detection</h3>
-    <ul class="dash">
-      <li><strong>Rules</strong>: Baseline 7 (featured) + Extended catalog (import via NDJSON).</li>
-      <li><strong>AI fields</strong>: <code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code> embedded in alerts.</li>
-      <li><strong>Tags</strong>: <code>ITH:baseline</code>, <code>ITH:extended</code> for clean filtering in Kibana.</li>
-    </ul>
-  </div>
 </div>
 
 <section class="section alt" id="ai">
@@ -254,6 +195,232 @@
     <div>© Identity Threat Hunter (ITH)</div>
     <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
   </div>
+
+<section class="section" id="full-catalog">
+  <div class="container">
+    <h2>Detection Rule Catalog</h2>
+    <p class="muted">Showing 30 rules from the export (sorted by severity & risk). Download the full pack and import in Kibana: <a class="btn" href="./rules_export.ndjson">Download full catalog</a></p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Name</th><th>Severity</th><th>Risk</th><th>Type</th><th>Tags</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr>
+<td>ITH Honey-Identity Trap Detection</td>
+<td class="sev">critical</td>
+<td>99</td>
+<td>query</td>
+<td>ith, honey, canary</td>
+<td class="col-def">Detects honeypot/canary events from Identity Threat Hunter.</td>
+</tr><tr>
+<td>ITH Impossible Travel</td>
+<td class="sev">critical</td>
+<td>99</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH Impossible Travel</td>
+</tr><tr>
+<td>ITH Honey Token Used</td>
+<td class="sev">critical</td>
+<td>98</td>
+<td>query</td>
+<td>ith, honey, canary</td>
+<td class="col-def">Detects canary token usage events.</td>
+</tr><tr>
+<td>ITH Canary User Login Attempt (Failure)</td>
+<td class="sev">critical</td>
+<td>97</td>
+<td>query</td>
+<td>ith, honey, canary</td>
+<td class="col-def">Detects canary user login attempts that failed.</td>
+</tr><tr>
+<td>ITH Canary Username Touched</td>
+<td class="sev">critical</td>
+<td>95</td>
+<td>query</td>
+<td>ith, honey, canary</td>
+<td class="col-def">Any event involving a canary user (user.name starts with canary-).</td>
+</tr><tr>
+<td>ITH - VSS Deleted via vssadmin</td>
+<td class="sev">critical</td>
+<td>85</td>
+<td>query</td>
+<td>ITH, Ransomware-Precursors, NoConnector</td>
+<td class="col-def">Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</td>
+</tr><tr>
+<td>ITH High Risk Score (&gt;= 90)</td>
+<td class="sev">high</td>
+<td>90</td>
+<td>query</td>
+<td>ith, risk</td>
+<td class="col-def">Any event with risk.score &gt;= 90.</td>
+</tr><tr>
+<td>ITH – All Scenarios (Judge Demo)</td>
+<td class="sev">high</td>
+<td>90</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – All Scenarios (Judge Demo)</td>
+</tr><tr>
+<td>ITH – Impossible Travel (Custom, with Response Actions)</td>
+<td class="sev">high</td>
+<td>90</td>
+<td>query</td>
+<td>ITH, Quantum-Response, Demo, Impossible Travel</td>
+<td class="col-def">Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</td>
+</tr><tr>
+<td>ITH – Privilege Escalation</td>
+<td class="sev">high</td>
+<td>90</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – Privilege Escalation</td>
+</tr><tr>
+<td>ITH – Brute Force Then Success</td>
+<td class="sev">high</td>
+<td>85</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – Brute Force Then Success</td>
+</tr><tr>
+<td>ITH – Credential Stuffing</td>
+<td class="sev">high</td>
+<td>85</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – Credential Stuffing</td>
+</tr><tr>
+<td>ITH - Quantum Guardian High-Risk Finding</td>
+<td class="sev">high</td>
+<td>80</td>
+<td>query</td>
+<td>ITH, QuantumGuardian, NoConnector</td>
+<td class="col-def">Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</td>
+</tr><tr>
+<td>ITH – Impossible Travel</td>
+<td class="sev">high</td>
+<td>80</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – Impossible Travel</td>
+</tr><tr>
+<td>ITH – MFA Bypass</td>
+<td class="sev">high</td>
+<td>80</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – MFA Bypass</td>
+</tr><tr>
+<td>ITH – ASN / ISP Change</td>
+<td class="sev">high</td>
+<td>73</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – ASN / ISP Change</td>
+</tr><tr>
+<td>ITH – Brute Force Then Success</td>
+<td class="sev">high</td>
+<td>73</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – Brute Force Then Success</td>
+</tr><tr>
+<td>ITH – Privilege Escalation</td>
+<td class="sev">high</td>
+<td>73</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – Privilege Escalation</td>
+</tr><tr>
+<td>Suspicious PowerShell (AutoTriage)</td>
+<td class="sev">high</td>
+<td>73</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Suspicious PowerShell (AutoTriage)</td>
+</tr><tr>
+<td>ITH Suspicious Test IP Ranges (Demo)</td>
+<td class="sev">medium</td>
+<td>70</td>
+<td>query</td>
+<td>ith, demo</td>
+<td class="col-def">Matches RFC5737 example IPs used in demo honey events.</td>
+</tr><tr>
+<td>ITH – ASN / ISP Change</td>
+<td class="sev">medium</td>
+<td>60</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – ASN / ISP Change</td>
+</tr><tr>
+<td>ITH – Rare Country Login</td>
+<td class="sev">medium</td>
+<td>60</td>
+<td>query</td>
+<td>ITH, baseline</td>
+<td class="col-def">ITH baseline detection: ITH – Rare Country Login</td>
+</tr><tr>
+<td>ITH - Possible Brute-Force (source.ip + user.name)</td>
+<td class="sev">medium</td>
+<td>55</td>
+<td>threshold</td>
+<td>ITH, Auth, NoConnector</td>
+<td class="col-def">Counts failed authentications per source.ip and user.name over the interval in ITH indices.</td>
+</tr><tr>
+<td>ITH - First Seen Admin Tool on Host</td>
+<td class="sev">medium</td>
+<td>50</td>
+<td>new_terms</td>
+<td>ITH, Discovery/Lateral, NoConnector</td>
+<td class="col-def">Flags the first observed execution of selected admin tools per host in ITH indices.</td>
+</tr><tr>
+<td>ITH – Quantum Adaptive Response</td>
+<td class="sev">low</td>
+<td>90</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</td>
+</tr><tr>
+<td>Quantum Guardian – High QES</td>
+<td class="sev">low</td>
+<td>89</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Quantum Guardian – High QES</td>
+</tr><tr>
+<td>ITH – Rare Country Login</td>
+<td class="sev">low</td>
+<td>81</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – Rare Country Login</td>
+</tr><tr>
+<td>Ingest External Alerts (ITH</td>
+<td class="sev">low</td>
+<td>53</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Ingest External Alerts (ITH</td>
+</tr><tr>
+<td>ITH – AI Enriched Login</td>
+<td class="sev">low</td>
+<td>21</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – AI Enriched Login</td>
+</tr><tr>
+<td>ITH – Credential Stuffing</td>
+<td class="sev">low</td>
+<td>21</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – Credential Stuffing</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 </footer>
 <script src="script.js"></script>
 </body>

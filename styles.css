@@ -76,3 +76,23 @@ code{background:#eef2ff;padding:2px 6px;border-radius:6px}
 }
 /* Ensure generic sections don't split into empty columns */
 .section .container{display:block}
+
+
+/* Tighter hero + global spacing */
+header+section.hero, .hero {padding:24px 0 12px !important}
+h1{margin:8px 0 10px}
+h2{margin:18px 0 12px}
+.section{padding:24px 0}
+.container{max-width:1200px}
+
+/* Compact architecture */
+.arch-simple{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fafafa}
+.arch-steps{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.arch-pill{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 1px rgba(0,0,0,.03);font-size:14px}
+.arch-arrow{font-size:18px;color:#9ca3af}
+/* Rules table tweaks */
+.table-wrap{overflow:auto}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:.55rem .7rem;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+.table .sev{text-transform:capitalize;font-weight:600}
+.col-def{max-width:520px}
