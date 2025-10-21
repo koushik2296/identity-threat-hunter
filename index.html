@@ -69,22 +69,43 @@
   </div>
 </div>
 <h2>Architecture</h2>
-<div class="arch-simple">
-  <div class="arch-steps">
-    <div class="arch-pill"><strong>1) Event Generator</strong></div><div class="arch-arrow">→</div>
-    <div class="arch-pill"><strong>2) Ingestor (Cloud Run)</strong></div><div class="arch-arrow">→</div>
-    <div class="arch-pill"><strong>3) Elastic Detections</strong></div><div class="arch-arrow">→</div>
-    <div class="arch-pill"><strong>4) Vertex AI Enrichment</strong></div><div class="arch-arrow">→</div>
-    <div class="arch-pill"><strong>5) Analyst UI / Kibana</strong></div>
+<section class="arch-tier" aria-label="Identity Threat Hunter Architecture">
+  <!-- Tier 1: Data flow left → right -->
+  <div class="arch-row arch-top">
+    <div class="arch-card">
+      <h4>Event Generator</h4>
+      <p>Credential stuffing, brute‑force→success, impossible travel, ASN change, honey‑identity.</p>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-card">
+      <h4>Ingestor (Cloud Run)</h4>
+      <p>POST <code>/ingest</code> → <code>ith‑events*</code>. Normalize, add metadata.</p>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-card">
+      <h4>Elastic Detections</h4>
+      <p>Baseline + Extended rules. <code>rule.explanation</code>, risk score, tags.</p>
+    </div>
   </div>
-  <ol class="num" style="margin-top:10px">
-    <li><em>Event Generator</em> sends synthetic identity events for scenarios (credential‑stuffing, brute‑force→success, impossible travel, ASN change, honey‑identity).</li>
-    <li><em>Ingestor</em> validates JSON, normalizes fields, indexes into <code>ith‑events*</code>.</li>
-    <li><em>Elastic Detections</em> evaluate all rules (Baseline + Extended) and attach <code>rule.explanation</code>, risk, tags.</li>
-    <li><em>Vertex AI</em> writes <code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code> for analyst context.</li>
-    <li><em>Analyst UI / Kibana</em> provide triage, filters, and timelines for judges.</li>
-  </ol>
-</div>
+
+  <!-- Tier 2: AI + Analyst surfaces -->
+  <div class="arch-row arch-bottom">
+    <div class="arch-card">
+      <h4>AI Enrichment (Vertex AI)</h4>
+      <p><code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code>.</p>
+    </div>
+    <div class="arch-arrow">↘</div>
+    <div class="arch-card wide">
+      <h4>Analyst UI (Cloud Run)</h4>
+      <p>Judge‑friendly filters, scenarios, trigger tools.</p>
+    </div>
+    <div class="arch-arrow">↙</div>
+    <div class="arch-card wide">
+      <h4>Kibana (Elastic Security → Alerts)</h4>
+      <p>Filters, timelines, fields; add <code>ai.*</code> as columns.</p>
+    </div>
+  </div>
+</section>
 
 <section class="section alt" id="ai">
   <div class="container grid-2">
@@ -196,10 +217,11 @@
     <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
   </div>
 
+
 <section class="section" id="full-catalog">
   <div class="container">
     <h2>Detection Rule Catalog</h2>
-    <p class="muted">Showing 30 rules from the export (sorted by severity & risk). Download the full pack and import in Kibana: <a class="btn" href="./rules_export.ndjson">Download full catalog</a></p>
+    <p class="muted">Showing <strong>34</strong> rules from the export. Download the full pack: <a class="btn" href="./rules_export.ndjson">rules_export.ndjson</a></p>
     <div class="table-wrap">
       <table class="table">
         <thead><tr><th>Name</th><th>Severity</th><th>Risk</th><th>Type</th><th>Tags</th><th>Definition</th></tr></thead>
@@ -414,12 +436,41 @@
 <td>query</td>
 <td>—</td>
 <td class="col-def">ITH – Credential Stuffing</td>
+</tr><tr>
+<td>ITH – MFA Bypass</td>
+<td class="sev">low</td>
+<td>21</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – MFA Bypass</td>
+</tr><tr>
+<td>ITH – Smoke Test (mfa_bypass)</td>
+<td class="sev">low</td>
+<td>21</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">ITH – Smoke Test (mfa_bypass)</td>
+</tr><tr>
+<td>ITH Alert Webhook</td>
+<td class="sev">—</td>
+<td>—</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Detects suspicious identity activity per rule logic.</td>
+</tr><tr>
+<td>Unnamed rule</td>
+<td class="sev">—</td>
+<td>—</td>
+<td>query</td>
+<td>—</td>
+<td class="col-def">Detects suspicious identity activity per rule logic.</td>
 </tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
+
 
 </footer>
 <script src="script.js"></script>

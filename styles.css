@@ -96,3 +96,19 @@ h2{margin:18px 0 12px}
 .table th,.table td{padding:.55rem .7rem;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
 .table .sev{text-transform:capitalize;font-weight:600}
 .col-def{max-width:520px}
+
+
+/* Tiered architecture layout */
+.arch-tier{border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#fafafa}
+.arch-row{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;align-items:stretch;gap:10px;justify-content:center;margin:6px 0}
+.arch-top .arch-card{min-width:280px}
+.arch-bottom{grid-template-columns:repeat(5, minmax(120px, 1fr));}
+.arch-arrow{display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:22px;padding:0 4px}
+.arch-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:12px;box-shadow:0 1px 1px rgba(0,0,0,.03)}
+.arch-card h4{margin:0 0 6px 0;font-size:16px}
+.arch-card p{margin:0;font-size:14px;line-height:1.35}
+.arch-card.wide{min-width:320px}
+@media (max-width:1024px){
+  .arch-row{grid-auto-flow:row;grid-auto-columns:unset;grid-template-columns:1fr;gap:8px}
+  .arch-arrow{display:none}
+}
