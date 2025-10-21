@@ -8,6 +8,22 @@
   <meta name="description" content="Identity Threat Hunter (ITH) — AI‑enriched identity security analytics on Google Cloud Run + Elastic Security."/>
   <meta name="theme-color" content="#4285F4"/>
   <link rel="stylesheet" href="styles.css"/>
+
+<style id="fullwidth-overrides">
+  html, body { margin:0; padding:0; overflow-x:hidden; }
+  .container, .wrap {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .section { width:100%; }
+  [class*="grid"], [class*="row"] { box-sizing: border-box; max-width: 100%; }
+  .card { box-sizing: border-box; }
+</style>
+
 </head>
 <body>
 <header class="site-header">
@@ -173,18 +189,47 @@
     <div>© Identity Threat Hunter (ITH)</div>
     <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
   </div>
+</footer>
+<script src="script.js"></script>
 
 <section class="section" id="full-catalog">
   <div class="container">
     <h2>Detection Rule Catalog</h2>
-    <p class="muted">Complete catalog from export: <strong>34</strong> rules. Each entry includes a clear, one‑line definition. Download the raw pack: <a class="btn" href="./rules_export.ndjson">rules_export.ndjson</a></p>
-    <dl class="rulelist">
-      <dt>Ingest External Alerts (ITH</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH - First Seen Admin Tool on Host</dt><dd>Flags the first observed execution of selected admin tools per host in ITH indices.</dd><dt>ITH - Possible Brute-Force (source.ip + user.name)</dt><dd>Counts failed authentications per source.ip and user.name over the interval in ITH indices.</dd><dt>ITH - Quantum Guardian High-Risk Finding</dt><dd>Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</dd><dt>ITH - VSS Deleted via vssadmin</dt><dd>Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</dd><dt>ITH Alert Webhook</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH Canary User Login Attempt (Failure)</dt><dd>Detects canary user login attempts that failed.</dd><dt>ITH Canary Username Touched</dt><dd>Any event involving a canary user (user.name starts with canary-).</dd><dt>ITH High Risk Score (&gt;= 90)</dt><dd>Any event with risk.score &gt;= 90.</dd><dt>ITH Honey Token Used</dt><dd>Detects canary token usage events.</dd><dt>ITH Honey-Identity Trap Detection</dt><dd>Detects honeypot/canary events from Identity Threat Hunter.</dd><dt>ITH Impossible Travel</dt><dd>Detects geovelocity anomalies where a user authenticates from two distant locations within a time window that makes travel impossible; flags the session pair and user.</dd><dt>ITH Suspicious Test IP Ranges (Demo)</dt><dd>Matches RFC5737 example IPs used in demo honey events.</dd><dt>ITH – AI Enriched Login</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH – All Scenarios (Judge Demo)</dt><dd>ITH baseline detection: ITH – All Scenarios (Judge Demo)</dd><dt>ITH – ASN / ISP Change</dt><dd>Flags identity activity where the Autonomous System / ISP associated with a user abruptly changes compared to historical baseline.</dd><dt>ITH – ASN / ISP Change</dt><dd>ITH baseline detection: ITH – ASN / ISP Change</dd><dt>ITH – Brute Force Then Success</dt><dd>ITH baseline detection: ITH – Brute Force Then Success</dd><dt>ITH – Brute Force Then Success</dt><dd>ITH – Brute Force Then Success</dd><dt>ITH – Credential Stuffing</dt><dd>Identifies credential‑stuffing/password‑spray behavior: many accounts targeted from a small set of sources with repeated failures in a short period.</dd><dt>ITH – Credential Stuffing</dt><dd>ITH baseline detection: ITH – Credential Stuffing</dd><dt>ITH – Impossible Travel</dt><dd>ITH baseline detection: ITH – Impossible Travel</dd><dt>ITH – Impossible Travel (Custom, with Response Actions)</dt><dd>Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</dd><dt>ITH – MFA Bypass</dt><dd>Surfaces suspicious MFA patterns such as disabled/changed MFA methods or logins without expected MFA following recent failures.</dd><dt>ITH – MFA Bypass</dt><dd>ITH baseline detection: ITH – MFA Bypass</dd><dt>ITH – Privilege Escalation</dt><dd>ITH baseline detection: ITH – Privilege Escalation</dd><dt>ITH – Privilege Escalation</dt><dd>Highlights risky administrative operations or privilege escalations tied to authentication events.</dd><dt>ITH – Quantum Adaptive Response</dt><dd>Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</dd><dt>ITH – Rare Country Login</dt><dd>Detects authentication originating from a country rarely or never seen for this user or tenant.</dd><dt>ITH – Rare Country Login</dt><dd>ITH baseline detection: ITH – Rare Country Login</dd><dt>ITH – Smoke Test (mfa_bypass)</dt><dd>Surfaces suspicious MFA patterns such as disabled/changed MFA methods or logins without expected MFA following recent failures.</dd><dt>Quantum Guardian – High QES</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>Suspicious PowerShell (AutoTriage)</dt><dd>Suspicious PowerShell (AutoTriage)</dd><dt>Unnamed rule</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd>
-    </dl>
+    <p class="muted">Catalog generated from <code>rules_export.ndjson</code>: <strong>27</strong> rules.</p>
+    <style>
+      /* Scoped styles for single-column catalog */
+      #full-catalog p { margin: 8px 0 10px 0; line-height: 1.45; }
+      #full-catalog strong { font-weight: 700; }
+    </style>
+    <p><strong>Ingest External Alerts (ITH:</strong> Detects suspicious identity behavior via frequency, sequence, and context correlation to reduce false positives.</p>
+<p><strong>ITH - First Seen Admin Tool on Host:</strong> Flags the first observed execution of selected admin tools per host in ITH indices.</p>
+<p><strong>ITH - Possible Brute-Force (source.ip + user.name):</strong> Counts failed authentications per source.ip and user.name over the interval in ITH indices.</p>
+<p><strong>ITH - Quantum Guardian High-Risk Finding:</strong> Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</p>
+<p><strong>ITH - VSS Deleted via vssadmin:</strong> Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</p>
+<p><strong>ITH Alert Webhook:</strong> Detects suspicious identity behavior via frequency, sequence, and context correlation to reduce false positives.</p>
+<p><strong>ITH Canary User Login Attempt (Failure):</strong> Detects canary user login attempts that failed.</p>
+<p><strong>ITH Canary Username Touched:</strong> Any event involving a canary user (user.name starts with canary-).</p>
+<p><strong>ITH High Risk Score (&gt;= 90):</strong> Detects suspicious identity behavior via frequency, sequence, and context correlation to reduce false positives.</p>
+<p><strong>ITH Honey Token Used:</strong> Triggers when a planted honey token value is observed, indicating secrets misuse or credential exfiltration.</p>
+<p><strong>ITH Honey-Identity Trap Detection:</strong> Detects honeypot/canary events from Identity Threat Hunter.</p>
+<p><strong>ITH Impossible Travel:</strong> Detects geovelocity anomalies: same user logging in from distant locations too quickly to be human.</p>
+<p><strong>ITH Suspicious Test IP Ranges (Demo):</strong> Matches RFC5737 example IPs used in demo honey events.</p>
+<p><strong>ITH – AI Enriched Login:</strong> Detects suspicious identity behavior via frequency, sequence, and context correlation to reduce false positives.</p>
+<p><strong>ITH – All Scenarios (Judge Demo):</strong> ITH baseline detection: ITH – All Scenarios (Judge Demo)</p>
+<p><strong>ITH – ASN / ISP Change:</strong> Highlights back‑to‑back logins for the same user from different ASNs/ISPs, suggesting proxy use or takeover.</p>
+<p><strong>ITH – Brute Force Then Success:</strong> ITH baseline detection: ITH – Brute Force Then Success</p>
+<p><strong>ITH – Credential Stuffing:</strong> Identifies credential‑stuffing/password‑spray by correlating many failures across accounts from a small IP pool.</p>
+<p><strong>ITH – Impossible Travel:</strong> ITH baseline detection: ITH – Impossible Travel</p>
+<p><strong>ITH – Impossible Travel (Custom, with Response Actions):</strong> Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</p>
+<p><strong>ITH – MFA Bypass:</strong> Flags authentications where MFA was bypassed/disabled — strong signal of session hijack or policy misuse.</p>
+<p><strong>ITH – Privilege Escalation:</strong> ITH baseline detection: ITH – Privilege Escalation</p>
+<p><strong>ITH – Quantum Adaptive Response:</strong> Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</p>
+<p><strong>ITH – Rare Country Login:</strong> Detects logins from rare or first‑time countries for the user/tenant — potential compromised credentials.</p>
+<p><strong>ITH – Smoke Test (mfa_bypass):</strong> Flags authentications where MFA was bypassed/disabled — strong signal of session hijack or policy misuse.</p>
+<p><strong>Quantum Guardian – High QES:</strong> Raises alerts on high QES/entropy anomalies correlated with elevated risk indicators.</p>
+<p><strong>Suspicious PowerShell (AutoTriage):</strong> Flags encoded/obfuscated PowerShell execution and script‑block logging indicative of attacker tooling.</p>
   </div>
 </section>
 
-</footer>
-<script src="script.js"></script>
 </body>
 </html>
