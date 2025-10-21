@@ -39,8 +39,90 @@
   <div class="container grid-2">
     <div>
       <h2>Overview</h2>
-<p><strong>Identity Threat Hunter (ITH)</strong> is an AI‑driven identity analytics and response framework built on Google Cloud Run and Elastic Security. It continuously ingests authentication and behavioral signals, enriches them through <strong>Vertex AI</strong> to detect anomalies such as credential stuffing, MFA bypass, or impossible travel, and explains each finding in human‑readable context for analysts. The goal is to transform raw identity events into intelligent detections and narratives that strengthen situational awareness.</p>
-<p>ITH integrates multiple microservices — an Ingestor, Event Generator, and Analyst UI — with Elastic’s detection engine and a custom rule pack. It supports real‑time simulations via the <em>Trigger All (Burst)</em> mode for demonstrations and rapid validation. Judges can experience the end‑to‑end flow: from synthetic identity bursts, through AI‑enriched alerts in Elastic, to visualization and rule explanations in the Analyst UI. This architecture showcases how cloud‑native automation and generative reasoning can elevate modern identity defense.</p>
+<p><strong>Identity Threat Hunter (ITH)</strong> is a cloud‑native identity security platform that detects, explains, and showcases complex identity attacks in real time. It combines <strong>Google Cloud Run</strong> microservices, <strong>Elastic Security</strong> detections, and <strong>Vertex AI</strong> enrichment to turn raw authentication and behavior signals into analyst‑ready, human‑readable stories with risk, rationale, and recommended response.</p>
+<p>ITH was built for a judge‑friendly demo and a practitioner‑ready workflow. You can <em>simulate</em> rich identity traffic (burst mode), <em>detect</em> it with a curated + extended rule pack, <em>enrich</em> findings using AI (summary, reasoning, confidence), and <em>visualize/triage</em> everything in an Analyst UI and Kibana Alerts. The system emphasizes transparency: every alert includes <code>event.scenario</code>, <code>rule.explanation</code>, and AI fields like <code>ai.summary</code>, <code>ai.signals</code>, and <code>ai.confidence</code>.</p>
+<ul class="dash">
+  <li><strong>What it solves:</strong> Fast, explainable identity threat detection (credential abuse, MFA bypass, geo anomalies, decoy/honey identity touches, etc.).</li>
+  <li><strong>How it works:</strong> Ingest → Detect (rules) → Enrich (AI) → Triage (UI/Kibana) → Optional respond.</li>
+  <li><strong>Why judges care:</strong> One click to generate realistic alerts; clear narratives; safe demo; clean runbook; extensible beyond the demo.</li>
+</ul>
+
+<h2>Architecture</h2>
+<p>The platform is decomposed into small services connected by HTTPS and Elastic APIs. Below is the high‑level flow and the major components.</p>
+
+<div class="card">
+  <h3>Data Flow (1 → 6)</h3>
+  <ol class="num">
+    <li><strong>Event Generator / Burst</strong> creates realistic identity events (e.g., brute force → success, impossible travel, rare ASN, honey identity probe).</li>
+    <li><strong>Ingestor (Cloud Run)</strong> receives JSON (<code>/ingest</code>), validates/normalizes, and writes to <code>ith-events*</code>.</li>
+    <li><strong>Elastic Detections</strong> run continuously using your rule pack (Baseline + Extended).</li>
+    <li><strong>AI Enrichment (Vertex AI)</strong> summarizes signals, extracts indicators, assigns confidence, and emits <code>ai.*</code> fields.</li>
+    <li><strong>Analyst UI</strong> and <strong>Kibana Alerts</strong> render detections, explanations, and timelines for judges.</li>
+    <li><strong>Response</strong> (optional) can call back to SOAR/Slack/Webhooks; demo focuses on visibility and clarity.</li>
+  </ol>
+</div>
+
+<div class="diagram" aria-label="ITH Architecture Diagram">
+<svg viewBox="0 0 980 420" role="img" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .box{fill:#ffffff;stroke:#d1d5db;stroke-width:1.2}
+    .title{font-family:Inter,system-ui,Segoe UI,Arial;font-size:13px;font-weight:700;fill:#111827}
+    .text{font-family:Inter,system-ui,Segoe UI,Arial;font-size:12px;fill:#374151}
+    .arrow{stroke:#9CA3AF;stroke-width:1.5;marker-end:url(#a)}
+  </style>
+  <defs>
+    <marker id="a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="#9CA3AF"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="20" y="40" width="200" height="90" rx="12"/><text class="title" x="35" y="65">Event Generator / Burst</text>
+  <text class="text" x="35" y="85">Scenarios: brute-force→success, impossible</text>
+  <text class="text" x="35" y="102">travel, rare country/ASN, honey identity</text>
+
+  <rect class="box" x="250" y="40" width="190" height="90" rx="12"/><text class="title" x="265" y="65">Ingestor (Cloud Run)</text>
+  <text class="text" x="265" y="85">POST /ingest → ith-events*</text>
+  <text class="text" x="265" y="102">Normalize, add metadata</text>
+
+  <rect class="box" x="470" y="40" width="190" height="90" rx="12"/><text class="title" x="485" y="65">Elastic Detections</text>
+  <text class="text" x="485" y="85">Rule pack: Baseline + Extended</text>
+  <text class="text" x="485" y="102">rule.explanation, risk score</text>
+
+  <rect class="box" x="690" y="40" width="190" height="90" rx="12"/><text class="title" x="705" y="65">AI Enrichment (Vertex AI)</text>
+  <text class="text" x="705" y="85">ai.summary, ai.signals, ai.confidence</text>
+
+  <rect class="box" x="250" y="170" width="290" height="90" rx="12"/><text class="title" x="265" y="195">Analyst UI (Cloud Run)</text>
+  <text class="text" x="265" y="215">Judge-friendly views, trigger tools</text>
+
+  <rect class="box" x="570" y="170" width="310" height="90" rx="12"/><text class="title" x="585" y="195">Kibana (Elastic Security → Alerts)</text>
+  <text class="text" x="585" y="215">Filters, timelines, fields, tags</text>
+
+  <line class="arrow" x1="220" y1="85" x2="250" y2="85"/>
+  <line class="arrow" x1="440" y1="85" x2="470" y2="85"/>
+  <line class="arrow" x1="660" y1="85" x2="690" y2="85"/>
+  <line class="arrow" x1="350" y1="130" x2="350" y2="170"/>
+  <line class="arrow" x1="565" y1="130" x2="725" y2="170"/>
+</svg>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Core Microservices</h3>
+    <ul class="dash">
+      <li><strong>Event Generator</strong>: CLI + website link; supports <em>Trigger All (Burst)</em>.</li>
+      <li><strong>Ingestor</strong>: Cloud Run (Python/FastAPI); validates JSON and writes to <code>ith-events*</code>.</li>
+      <li><strong>Analyst UI</strong>: Cloud Run front-end for quick filters and judge-friendly visuals.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>AI & Detection</h3>
+    <ul class="dash">
+      <li><strong>Rules</strong>: Baseline 7 (featured) + Extended catalog (import via NDJSON).</li>
+      <li><strong>AI fields</strong>: <code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code> embedded in alerts.</li>
+      <li><strong>Tags</strong>: <code>ITH:baseline</code>, <code>ITH:extended</code> for clean filtering in Kibana.</li>
+    </ul>
+  </div>
+</div>
 
 <section class="section alt" id="ai">
   <div class="container grid-2">

@@ -7,20 +7,26 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 
 ---
 
-## Architecture Overview
+## Architecture
 
-```
-[User / Judge] → ith-ui (Analyst UI, Cloud Run)
-                  │
-                  ├──> ith-event-gen → ith-ingestor ──► Elastic Cloud (ith-events*)
-                  │                        │
-                  │                        └─► Vertex AI (Gemini) ⇢ ai.summary / ai.confidence / event.scenario
-                  │
-                  ├──> quantum-guardian ──► Elastic (quantum-guardian*)
-                  └──> Kibana (Rules & Alerts)
-```
+**Flow (1 → 6)**  
+1. **Event Generator / Burst** creates realistic identity events (brute‑force→success, impossible travel, rare ASN, honey identity).  
+2. **Ingestor (Cloud Run)** receives JSON (`/ingest`), validates/normalizes, writes to `ith-events*`.  
+3. **Elastic Detections** run continuously using your rule pack (Baseline + Extended).  
+4. **AI Enrichment (Vertex AI)** summarizes signals, extracts indicators, confidence → `ai.*` fields.  
+5. **Analyst UI** and **Kibana Alerts** render detections, explanations, timelines.  
+6. **Response (optional)** can notify SOAR/Slack/Webhooks (demo focuses on visibility).
 
----
+**Core Microservices**
+- **Event Generator**: CLI + website link; supports Trigger All (Burst).
+- **Ingestor**: Cloud Run (Python/FastAPI); validates JSON and writes to `ith-events*`.
+- **Analyst UI**: Cloud Run front-end for quick filters and judge‑friendly visuals.
+
+**AI & Detection**
+- **Rules**: Baseline 7 (featured) + Extended catalog (import via NDJSON).
+- **AI fields**: `ai.summary`, `ai.signals`, `ai.confidence` embedded in alerts.
+- **Tags**: `ITH:baseline`, `ITH:extended` for clean filtering in Kibana.
+
 
 ## Services
 
