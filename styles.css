@@ -51,3 +51,9 @@ code{background:#eef2ff;padding:2px 6px;border-radius:6px}
 .rule-card .rule-title { font-weight: 600; margin-bottom: 4px; }
 .rule-card .rule-severity { font-size: 0.9rem; color: #475467; margin-bottom: 6px; }
 .rule-card .rule-desc { font-size: 0.95rem; color: #344054; }
+
+.table-wrap{overflow:auto}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:.6rem .8rem;border-bottom:1px solid #e5e7eb;text-align:left}
+.table .sev{text-transform:capitalize;font-weight:600}
+.tags{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

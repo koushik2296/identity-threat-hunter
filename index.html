@@ -31,7 +31,11 @@
     <div class="cta">
       <a class="btn primary" href="https://ith-ui-1054075376433.us-central1.run.app" target="_blank" rel="noopener">Open Analyst UI</a>
       <a class="btn" href="https://github.com/koushik2296/identity-threat-hunter" target="_blank" rel="noopener">View Source</a>
-    </div>
+    
+<div class="cta">
+  <a class="btn" href="#burst">Trigger All (Burst)</a>
+</div>
+
   </div>
 </section>
 
@@ -168,11 +172,309 @@
   </div>
 </section>
 
+<section class="section" id="burst">
+  <div class="container grid-2">
+    <div>
+      <h2>Trigger All (Burst) — Judge Demo</h2>
+      <p>This produces a high volume of synthetic identity events for ~60 seconds so Elastic shows a lively stream of alerts. Use this if you want a quick, impressive demo.</p>
+      <ol class="num">
+        <li>Download <a href="sandbox:/mnt/data/TriggerAll.ps1">TriggerAll.ps1</a>.</li>
+        <li>Open PowerShell and run:<br/><code>./TriggerAll.ps1 -IngestUrl "https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest" -Seconds 60</code></li>
+        <li>Open <em>Kibana → Security → Alerts</em> and watch detections fire in real-time.</li>
+      </ol>
+      <p class="muted">Requires Windows PowerShell 5+ or PowerShell 7+ and Internet connectivity.</p>
+    </div>
+    <div class="card">
+      <h3>What gets generated</h3>
+      <ul class="dash">
+        <li>Impossible Travel, MFA Bypass, Brute Force → Success</li>
+        <li>Rare Country, ASN/ISP Change, Credential Stuffing</li>
+        <li>Honey Identity probe</li>
+      </ul>
+      <p>Each event is enriched by Vertex AI (Gemini) and indexed into <code>ith-events*</code> with <code>ai.*</code> fields.</p>
+    </div>
+  </div>
+</section>
+
+
 <footer class="site-footer">
   <div class="container footer-inner">
     <div>© Identity Threat Hunter (ITH)</div>
     <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
   </div>
+
+<section class="section" id="full-catalog">
+  <div class="container">
+    <h2>Full Detection Rule Catalog</h2>
+    <p>This project includes a comprehensive pack of Elastic + ITH rules. Download the entire pack and import in Kibana: <a class="btn" href="./rules_export.ndjson">Download full catalog</a></p>
+    <p class="muted">Total rules detected from export: <strong>34</strong>. Tagged as Baseline: <strong>0</strong>. Extended: <strong>34</strong>.</p>
+
+    <div class="card">
+      <h3>Featured Baseline</h3>
+      <p>These are the curated “Baseline 7” (and any others you tagged as <code>ITH:baseline</code>) used in the primary demo.</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Severity</th><th>Risk</th><th>Type</th><th>Tags</th></tr></thead>
+          <tbody>
+            <tr><td colspan="5">No rules were tagged with ITH:baseline in the export.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Extended Rule Set</h3>
+      <p>All additional rules included in the export.</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Severity</th><th>Risk</th><th>Type</th><th>Tags</th></tr></thead>
+          <tbody>
+            <tr>
+  <td>ITH - Quantum Guardian High-Risk Finding</td>
+  <td class="sev">high</td>
+  <td>80</td>
+  <td>query</td>
+  <td class="tags">ITH, QuantumGuardian, NoConnector</td>
+</tr>
+<tr>
+  <td>Suspicious PowerShell (AutoTriage)</td>
+  <td class="sev">high</td>
+  <td>73</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Impossible Travel (Custom, with Response Actions)</td>
+  <td class="sev">high</td>
+  <td>90</td>
+  <td>query</td>
+  <td class="tags">ITH, Quantum-Response, Demo, Impossible Travel</td>
+</tr>
+<tr>
+  <td>ITH – All Scenarios (Judge Demo)</td>
+  <td class="sev">high</td>
+  <td>90</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH – ASN / ISP Change</td>
+  <td class="sev">high</td>
+  <td>73</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – MFA Bypass</td>
+  <td class="sev">low</td>
+  <td>21</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH High Risk Score (&gt;= 90)</td>
+  <td class="sev">high</td>
+  <td>90</td>
+  <td>query</td>
+  <td class="tags">ith, risk</td>
+</tr>
+<tr>
+  <td>ITH – Privilege Escalation</td>
+  <td class="sev">high</td>
+  <td>90</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH – ASN / ISP Change</td>
+  <td class="sev">medium</td>
+  <td>60</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH Canary Username Touched</td>
+  <td class="sev">critical</td>
+  <td>95</td>
+  <td>query</td>
+  <td class="tags">ith, honey, canary</td>
+</tr>
+<tr>
+  <td>ITH – Brute Force Then Success</td>
+  <td class="sev">high</td>
+  <td>85</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH Honey Token Used</td>
+  <td class="sev">critical</td>
+  <td>98</td>
+  <td>query</td>
+  <td class="tags">ith, honey, canary</td>
+</tr>
+<tr>
+  <td>ITH – Brute Force Then Success</td>
+  <td class="sev">high</td>
+  <td>73</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Credential Stuffing</td>
+  <td class="sev">low</td>
+  <td>21</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH - VSS Deleted via vssadmin</td>
+  <td class="sev">critical</td>
+  <td>85</td>
+  <td>query</td>
+  <td class="tags">ITH, Ransomware-Precursors, NoConnector</td>
+</tr>
+<tr>
+  <td>ITH Honey-Identity Trap Detection</td>
+  <td class="sev">critical</td>
+  <td>99</td>
+  <td>query</td>
+  <td class="tags">ith, honey, canary</td>
+</tr>
+<tr>
+  <td>ITH Canary User Login Attempt (Failure)</td>
+  <td class="sev">critical</td>
+  <td>97</td>
+  <td>query</td>
+  <td class="tags">ith, honey, canary</td>
+</tr>
+<tr>
+  <td>ITH Suspicious Test IP Ranges (Demo)</td>
+  <td class="sev">medium</td>
+  <td>70</td>
+  <td>query</td>
+  <td class="tags">ith, demo</td>
+</tr>
+<tr>
+  <td>Quantum Guardian – High QES</td>
+  <td class="sev">low</td>
+  <td>89</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Quantum Adaptive Response</td>
+  <td class="sev">low</td>
+  <td>90</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Privilege Escalation</td>
+  <td class="sev">high</td>
+  <td>73</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Rare Country Login</td>
+  <td class="sev">low</td>
+  <td>81</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – Smoke Test (mfa_bypass)</td>
+  <td class="sev">low</td>
+  <td>21</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH Impossible Travel</td>
+  <td class="sev">critical</td>
+  <td>99</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – AI Enriched Login</td>
+  <td class="sev">low</td>
+  <td>21</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH – MFA Bypass</td>
+  <td class="sev">high</td>
+  <td>80</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH – Credential Stuffing</td>
+  <td class="sev">high</td>
+  <td>85</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH – Impossible Travel</td>
+  <td class="sev">high</td>
+  <td>80</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>ITH - First Seen Admin Tool on Host</td>
+  <td class="sev">medium</td>
+  <td>50</td>
+  <td>new_terms</td>
+  <td class="tags">ITH, Discovery/Lateral, NoConnector</td>
+</tr>
+<tr>
+  <td>ITH - Possible Brute-Force (source.ip + user.name)</td>
+  <td class="sev">medium</td>
+  <td>55</td>
+  <td>threshold</td>
+  <td class="tags">ITH, Auth, NoConnector</td>
+</tr>
+<tr>
+  <td>ITH – Rare Country Login</td>
+  <td class="sev">medium</td>
+  <td>60</td>
+  <td>query</td>
+  <td class="tags">ITH, baseline</td>
+</tr>
+<tr>
+  <td>Ingest External Alerts (ITH</td>
+  <td class="sev">low</td>
+  <td>53</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>ITH Alert Webhook</td>
+  <td class="sev">—</td>
+  <td>—</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+<tr>
+  <td>Unnamed rule</td>
+  <td class="sev">—</td>
+  <td>—</td>
+  <td>query</td>
+  <td class="tags">—</td>
+</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 </footer>
 <script src="script.js"></script>
 </body>
