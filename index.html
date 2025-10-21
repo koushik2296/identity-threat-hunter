@@ -39,70 +39,27 @@
   <div class="container grid-2">
     <div>
       <h2>Overview</h2>
-<p><strong>Identity Threat Hunter (ITH)</strong> is a cloud‑native identity security platform that detects, explains, and showcases complex identity attacks in real time. It combines <strong>Google Cloud Run</strong> microservices, <strong>Elastic Security</strong> detections, and <strong>Vertex AI</strong> enrichment to turn raw authentication and behavior signals into analyst‑ready, human‑readable stories with risk, rationale, and recommended response.</p>
-<p>ITH was built for a judge‑friendly demo and a practitioner‑ready workflow. You can <em>simulate</em> rich identity traffic (burst mode), <em>detect</em> it with a curated + extended rule pack, <em>enrich</em> findings using AI (summary, reasoning, confidence), and <em>visualize/triage</em> everything in an Analyst UI and Kibana Alerts. The system emphasizes transparency: every alert includes <code>event.scenario</code>, <code>rule.explanation</code>, and AI fields like <code>ai.summary</code>, <code>ai.signals</code>, and <code>ai.confidence</code>.</p>
-<ul class="dash">
-  <li><strong>What it solves:</strong> Fast, explainable identity threat detection (credential abuse, MFA bypass, geo anomalies, decoy/honey identity touches, etc.).</li>
-  <li><strong>How it works:</strong> Ingest → Detect (rules) → Enrich (AI) → Triage (UI/Kibana) → Optional respond.</li>
-  <li><strong>Why judges care:</strong> One click to generate realistic alerts; clear narratives; safe demo; clean runbook; extensible beyond the demo.</li>
-</ul>
-
-
-<div class="callouts">
-  <div class="callout ai-help">
-    <h3>Why AI helps here</h3>
-    <p>Vertex AI enriches detections so analysts get the “why” without digging through raw logs.</p>
-    <ul class="dash">
-      <li><code>ai.summary</code> — a short narrative of what happened and why it matters.</li>
-      <li><code>ai.signals</code> — extracted indicators (geo jump, ASN change, failed→success login chain, decoy touch).</li>
-      <li><code>ai.confidence</code> — model confidence (0–100); useful for sorting triage queues.</li>
-    </ul>
-    <p class="muted">Where to view in Kibana: open an alert → <em>Alert details</em> panel → fields tab; add <code>ai.*</code> fields as columns or inspect in the JSON view.</p>
-  </div>
-  <div class="callout privacy">
-    <h3>Security &amp; Privacy</h3>
-    <ul class="dash">
-      <li><strong>Synthetic-only</strong> traffic for demos; no customer data, no PII.</li>
-      <li>Network egress is limited to Elastic and GCP services used by the demo.</li>
-      <li>All identities, IPs, and locations used are placeholders (RFC 5737 ranges, test usernames).</li>
-    </ul>
-  </div>
-</div>
-<h2>Architecture</h2>
-<section class="arch-tier" aria-label="Identity Threat Hunter Architecture">
-  <!-- Tier 1: Data flow left → right -->
-  <div class="arch-row arch-top">
-    <div class="arch-card">
-      <h4>Event Generator</h4>
-      <p>Credential stuffing, brute‑force→success, impossible travel, ASN change, honey‑identity.</p>
+      <p>ITH ingests authentication activity, performs <strong>AI enrichment via Vertex AI</strong> for risk summaries and scenarios, and raises real‑time alerts for identity‑based threats. The platform is fully serverless on Google Cloud Run and uses Elastic Cloud for analytics and alerting.</p>
+      <ul class="check">
+        <li>AI summaries (<code>ai.summary</code>) and confidence (<code>ai.confidence</code>)</li>
+        <li>Seven baseline identity detections + Honey Identity</li>
+        <li>Quantum Guardian add‑on (QES)</li>
+        <li>Judge‑ready links &amp; read‑only access</li>
+      </ul>
     </div>
-    <div class="arch-arrow">→</div>
-    <div class="arch-card">
-      <h4>Ingestor (Cloud Run)</h4>
-      <p>POST <code>/ingest</code> → <code>ith‑events*</code>. Normalize, add metadata.</p>
-    </div>
-    <div class="arch-arrow">→</div>
-    <div class="arch-card">
-      <h4>Elastic Detections</h4>
-      <p>Baseline + Extended rules. <code>rule.explanation</code>, risk score, tags.</p>
-    </div>
-  </div>
-
-  <!-- Tier 2: AI + Analyst surfaces -->
-  <div class="arch-row arch-bottom">
-    <div class="arch-card">
-      <h4>AI Enrichment (Vertex AI)</h4>
-      <p><code>ai.summary</code>, <code>ai.signals</code>, <code>ai.confidence</code>.</p>
-    </div>
-    <div class="arch-arrow">↘</div>
-    <div class="arch-card wide">
-      <h4>Analyst UI (Cloud Run)</h4>
-      <p>Judge‑friendly filters, scenarios, trigger tools.</p>
-    </div>
-    <div class="arch-arrow">↙</div>
-    <div class="arch-card wide">
-      <h4>Kibana (Elastic Security → Alerts)</h4>
-      <p>Filters, timelines, fields; add <code>ai.*</code> as columns.</p>
+    <div class="card">
+      <h3>Architecture (at a glance)</h3>
+<pre class="ascii">
+[User/Judge] → ith-ui (Cloud Run, Analyst UI)
+                  │
+                  ├→ ith-event-gen → ith-ingestor ──► Elastic (ith-events*)
+                  │                       │
+                  │                       └─► Vertex AI (Gemini) ⇢ ai.summary / ai.confidence / event.scenario
+                  │
+                  ├→ quantum-guardian ──► Elastic (quantum-guardian*)
+                  │
+                  └→ Kibana Alerts (Elastic Security)
+</pre>
     </div>
   </div>
 </section>
@@ -217,260 +174,15 @@
     <div class="muted">Built by Koushik Anand and Kruthika Suresh</div>
   </div>
 
-
 <section class="section" id="full-catalog">
   <div class="container">
     <h2>Detection Rule Catalog</h2>
-    <p class="muted">Showing <strong>34</strong> rules from the export. Download the full pack: <a class="btn" href="./rules_export.ndjson">rules_export.ndjson</a></p>
-    <div class="table-wrap">
-      <table class="table">
-        <thead><tr><th>Name</th><th>Severity</th><th>Risk</th><th>Type</th><th>Tags</th><th>Definition</th></tr></thead>
-        <tbody>
-          <tr>
-<td>ITH Honey-Identity Trap Detection</td>
-<td class="sev">critical</td>
-<td>99</td>
-<td>query</td>
-<td>ith, honey, canary</td>
-<td class="col-def">Detects honeypot/canary events from Identity Threat Hunter.</td>
-</tr><tr>
-<td>ITH Impossible Travel</td>
-<td class="sev">critical</td>
-<td>99</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH Impossible Travel</td>
-</tr><tr>
-<td>ITH Honey Token Used</td>
-<td class="sev">critical</td>
-<td>98</td>
-<td>query</td>
-<td>ith, honey, canary</td>
-<td class="col-def">Detects canary token usage events.</td>
-</tr><tr>
-<td>ITH Canary User Login Attempt (Failure)</td>
-<td class="sev">critical</td>
-<td>97</td>
-<td>query</td>
-<td>ith, honey, canary</td>
-<td class="col-def">Detects canary user login attempts that failed.</td>
-</tr><tr>
-<td>ITH Canary Username Touched</td>
-<td class="sev">critical</td>
-<td>95</td>
-<td>query</td>
-<td>ith, honey, canary</td>
-<td class="col-def">Any event involving a canary user (user.name starts with canary-).</td>
-</tr><tr>
-<td>ITH - VSS Deleted via vssadmin</td>
-<td class="sev">critical</td>
-<td>85</td>
-<td>query</td>
-<td>ITH, Ransomware-Precursors, NoConnector</td>
-<td class="col-def">Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</td>
-</tr><tr>
-<td>ITH High Risk Score (&gt;= 90)</td>
-<td class="sev">high</td>
-<td>90</td>
-<td>query</td>
-<td>ith, risk</td>
-<td class="col-def">Any event with risk.score &gt;= 90.</td>
-</tr><tr>
-<td>ITH – All Scenarios (Judge Demo)</td>
-<td class="sev">high</td>
-<td>90</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – All Scenarios (Judge Demo)</td>
-</tr><tr>
-<td>ITH – Impossible Travel (Custom, with Response Actions)</td>
-<td class="sev">high</td>
-<td>90</td>
-<td>query</td>
-<td>ITH, Quantum-Response, Demo, Impossible Travel</td>
-<td class="col-def">Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</td>
-</tr><tr>
-<td>ITH – Privilege Escalation</td>
-<td class="sev">high</td>
-<td>90</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – Privilege Escalation</td>
-</tr><tr>
-<td>ITH – Brute Force Then Success</td>
-<td class="sev">high</td>
-<td>85</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – Brute Force Then Success</td>
-</tr><tr>
-<td>ITH – Credential Stuffing</td>
-<td class="sev">high</td>
-<td>85</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – Credential Stuffing</td>
-</tr><tr>
-<td>ITH - Quantum Guardian High-Risk Finding</td>
-<td class="sev">high</td>
-<td>80</td>
-<td>query</td>
-<td>ITH, QuantumGuardian, NoConnector</td>
-<td class="col-def">Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</td>
-</tr><tr>
-<td>ITH – Impossible Travel</td>
-<td class="sev">high</td>
-<td>80</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – Impossible Travel</td>
-</tr><tr>
-<td>ITH – MFA Bypass</td>
-<td class="sev">high</td>
-<td>80</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – MFA Bypass</td>
-</tr><tr>
-<td>ITH – ASN / ISP Change</td>
-<td class="sev">high</td>
-<td>73</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – ASN / ISP Change</td>
-</tr><tr>
-<td>ITH – Brute Force Then Success</td>
-<td class="sev">high</td>
-<td>73</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – Brute Force Then Success</td>
-</tr><tr>
-<td>ITH – Privilege Escalation</td>
-<td class="sev">high</td>
-<td>73</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – Privilege Escalation</td>
-</tr><tr>
-<td>Suspicious PowerShell (AutoTriage)</td>
-<td class="sev">high</td>
-<td>73</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Suspicious PowerShell (AutoTriage)</td>
-</tr><tr>
-<td>ITH Suspicious Test IP Ranges (Demo)</td>
-<td class="sev">medium</td>
-<td>70</td>
-<td>query</td>
-<td>ith, demo</td>
-<td class="col-def">Matches RFC5737 example IPs used in demo honey events.</td>
-</tr><tr>
-<td>ITH – ASN / ISP Change</td>
-<td class="sev">medium</td>
-<td>60</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – ASN / ISP Change</td>
-</tr><tr>
-<td>ITH – Rare Country Login</td>
-<td class="sev">medium</td>
-<td>60</td>
-<td>query</td>
-<td>ITH, baseline</td>
-<td class="col-def">ITH baseline detection: ITH – Rare Country Login</td>
-</tr><tr>
-<td>ITH - Possible Brute-Force (source.ip + user.name)</td>
-<td class="sev">medium</td>
-<td>55</td>
-<td>threshold</td>
-<td>ITH, Auth, NoConnector</td>
-<td class="col-def">Counts failed authentications per source.ip and user.name over the interval in ITH indices.</td>
-</tr><tr>
-<td>ITH - First Seen Admin Tool on Host</td>
-<td class="sev">medium</td>
-<td>50</td>
-<td>new_terms</td>
-<td>ITH, Discovery/Lateral, NoConnector</td>
-<td class="col-def">Flags the first observed execution of selected admin tools per host in ITH indices.</td>
-</tr><tr>
-<td>ITH – Quantum Adaptive Response</td>
-<td class="sev">low</td>
-<td>90</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</td>
-</tr><tr>
-<td>Quantum Guardian – High QES</td>
-<td class="sev">low</td>
-<td>89</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Quantum Guardian – High QES</td>
-</tr><tr>
-<td>ITH – Rare Country Login</td>
-<td class="sev">low</td>
-<td>81</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – Rare Country Login</td>
-</tr><tr>
-<td>Ingest External Alerts (ITH</td>
-<td class="sev">low</td>
-<td>53</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Ingest External Alerts (ITH</td>
-</tr><tr>
-<td>ITH – AI Enriched Login</td>
-<td class="sev">low</td>
-<td>21</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – AI Enriched Login</td>
-</tr><tr>
-<td>ITH – Credential Stuffing</td>
-<td class="sev">low</td>
-<td>21</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – Credential Stuffing</td>
-</tr><tr>
-<td>ITH – MFA Bypass</td>
-<td class="sev">low</td>
-<td>21</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – MFA Bypass</td>
-</tr><tr>
-<td>ITH – Smoke Test (mfa_bypass)</td>
-<td class="sev">low</td>
-<td>21</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">ITH – Smoke Test (mfa_bypass)</td>
-</tr><tr>
-<td>ITH Alert Webhook</td>
-<td class="sev">—</td>
-<td>—</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Detects suspicious identity activity per rule logic.</td>
-</tr><tr>
-<td>Unnamed rule</td>
-<td class="sev">—</td>
-<td>—</td>
-<td>query</td>
-<td>—</td>
-<td class="col-def">Detects suspicious identity activity per rule logic.</td>
-</tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="muted">Complete catalog from export: <strong>34</strong> rules. Each entry includes a clear, one‑line definition. Download the raw pack: <a class="btn" href="./rules_export.ndjson">rules_export.ndjson</a></p>
+    <dl class="rulelist">
+      <dt>Ingest External Alerts (ITH</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH - First Seen Admin Tool on Host</dt><dd>Flags the first observed execution of selected admin tools per host in ITH indices.</dd><dt>ITH - Possible Brute-Force (source.ip + user.name)</dt><dd>Counts failed authentications per source.ip and user.name over the interval in ITH indices.</dd><dt>ITH - Quantum Guardian High-Risk Finding</dt><dd>Surfaces high/critical Quantum Guardian findings or risk_score &gt;= 70.</dd><dt>ITH - VSS Deleted via vssadmin</dt><dd>Detects deletion of Volume Shadow Copies via vssadmin delete shadows in ITH indices.</dd><dt>ITH Alert Webhook</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH Canary User Login Attempt (Failure)</dt><dd>Detects canary user login attempts that failed.</dd><dt>ITH Canary Username Touched</dt><dd>Any event involving a canary user (user.name starts with canary-).</dd><dt>ITH High Risk Score (&gt;= 90)</dt><dd>Any event with risk.score &gt;= 90.</dd><dt>ITH Honey Token Used</dt><dd>Detects canary token usage events.</dd><dt>ITH Honey-Identity Trap Detection</dt><dd>Detects honeypot/canary events from Identity Threat Hunter.</dd><dt>ITH Impossible Travel</dt><dd>Detects geovelocity anomalies where a user authenticates from two distant locations within a time window that makes travel impossible; flags the session pair and user.</dd><dt>ITH Suspicious Test IP Ranges (Demo)</dt><dd>Matches RFC5737 example IPs used in demo honey events.</dd><dt>ITH – AI Enriched Login</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>ITH – All Scenarios (Judge Demo)</dt><dd>ITH baseline detection: ITH – All Scenarios (Judge Demo)</dd><dt>ITH – ASN / ISP Change</dt><dd>Flags identity activity where the Autonomous System / ISP associated with a user abruptly changes compared to historical baseline.</dd><dt>ITH – ASN / ISP Change</dt><dd>ITH baseline detection: ITH – ASN / ISP Change</dd><dt>ITH – Brute Force Then Success</dt><dd>ITH baseline detection: ITH – Brute Force Then Success</dd><dt>ITH – Brute Force Then Success</dt><dd>ITH – Brute Force Then Success</dd><dt>ITH – Credential Stuffing</dt><dd>Identifies credential‑stuffing/password‑spray behavior: many accounts targeted from a small set of sources with repeated failures in a short period.</dd><dt>ITH – Credential Stuffing</dt><dd>ITH baseline detection: ITH – Credential Stuffing</dd><dt>ITH – Impossible Travel</dt><dd>ITH baseline detection: ITH – Impossible Travel</dd><dt>ITH – Impossible Travel (Custom, with Response Actions)</dt><dd>Custom clone for hackathon demo. Detects impossible travel or high-risk authentication, then automatically runs an OSquery sweep and isolates the host via Elastic Defend.</dd><dt>ITH – MFA Bypass</dt><dd>Surfaces suspicious MFA patterns such as disabled/changed MFA methods or logins without expected MFA following recent failures.</dd><dt>ITH – MFA Bypass</dt><dd>ITH baseline detection: ITH – MFA Bypass</dd><dt>ITH – Privilege Escalation</dt><dd>ITH baseline detection: ITH – Privilege Escalation</dd><dt>ITH – Privilege Escalation</dt><dd>Highlights risky administrative operations or privilege escalations tied to authentication events.</dd><dt>ITH – Quantum Adaptive Response</dt><dd>Triggers adaptive live OSquery investigation when a high-risk identity event is detected.</dd><dt>ITH – Rare Country Login</dt><dd>Detects authentication originating from a country rarely or never seen for this user or tenant.</dd><dt>ITH – Rare Country Login</dt><dd>ITH baseline detection: ITH – Rare Country Login</dd><dt>ITH – Smoke Test (mfa_bypass)</dt><dd>Surfaces suspicious MFA patterns such as disabled/changed MFA methods or logins without expected MFA following recent failures.</dd><dt>Quantum Guardian – High QES</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd><dt>Suspicious PowerShell (AutoTriage)</dt><dd>Suspicious PowerShell (AutoTriage)</dd><dt>Unnamed rule</dt><dd>Detects suspicious identity behavior based on event frequency, sequence and context for this rule family.</dd>
+    </dl>
   </div>
 </section>
-
 
 </footer>
 <script src="script.js"></script>

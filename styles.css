@@ -52,63 +52,8 @@ code{background:#eef2ff;padding:2px 6px;border-radius:6px}
 .rule-card .rule-severity { font-size: 0.9rem; color: #475467; margin-bottom: 6px; }
 .rule-card .rule-desc { font-size: 0.95rem; color: #344054; }
 
-.diagram{border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin:12px 0;background:#fafafa}
-.card{border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin:16px 0;background:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.dash{list-style:disc;padding-left:1.2rem}
-.num{list-style:decimal;padding-left:1.2rem}
 
-
-/* Layout polish */
-.container{max-width:1280px;margin:0 auto;padding:0 20px}
-.section{padding:32px 0}
-.quick-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start}
-.quick-grid .card.mini{margin:0}
-.btn-row{display:flex;flex-wrap:wrap;gap:10px}
-.num.tight>li{margin:6px 0}
-.callouts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-.callout{border:1px solid #e5e7eb;border-radius:16px;padding:16px;background:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.callout.ai-help{border-left:6px solid #6366f1}
-.callout.privacy{border-left:6px solid #10b981}
-@media (max-width:900px){
-  .quick-grid{grid-template-columns:1fr}
-  .callouts{grid-template-columns:1fr}
-}
-/* Ensure generic sections don't split into empty columns */
-.section .container{display:block}
-
-
-/* Tighter hero + global spacing */
-header+section.hero, .hero {padding:24px 0 12px !important}
-h1{margin:8px 0 10px}
-h2{margin:18px 0 12px}
-.section{padding:24px 0}
-.container{max-width:1200px}
-
-/* Compact architecture */
-.arch-simple{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fafafa}
-.arch-steps{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.arch-pill{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 1px rgba(0,0,0,.03);font-size:14px}
-.arch-arrow{font-size:18px;color:#9ca3af}
-/* Rules table tweaks */
-.table-wrap{overflow:auto}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:.55rem .7rem;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
-.table .sev{text-transform:capitalize;font-weight:600}
-.col-def{max-width:520px}
-
-
-/* Tiered architecture layout */
-.arch-tier{border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#fafafa}
-.arch-row{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;align-items:stretch;gap:10px;justify-content:center;margin:6px 0}
-.arch-top .arch-card{min-width:280px}
-.arch-bottom{grid-template-columns:repeat(5, minmax(120px, 1fr));}
-.arch-arrow{display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:22px;padding:0 4px}
-.arch-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:12px;box-shadow:0 1px 1px rgba(0,0,0,.03)}
-.arch-card h4{margin:0 0 6px 0;font-size:16px}
-.arch-card p{margin:0;font-size:14px;line-height:1.35}
-.arch-card.wide{min-width:320px}
-@media (max-width:1024px){
-  .arch-row{grid-auto-flow:row;grid-auto-columns:unset;grid-template-columns:1fr;gap:8px}
-  .arch-arrow{display:none}
-}
+.rulelist{display:grid;grid-template-columns:1fr 2fr;gap:10px 18px;margin-top:8px}
+.rulelist dt{font-weight:600}
+.rulelist dd{margin:0}
+@media (max-width:900px){.rulelist{grid-template-columns:1fr}}
