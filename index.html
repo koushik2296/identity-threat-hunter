@@ -47,6 +47,27 @@
   <li><strong>Why judges care:</strong> One click to generate realistic alerts; clear narratives; safe demo; clean runbook; extensible beyond the demo.</li>
 </ul>
 
+
+<div class="callouts">
+  <div class="callout ai-help">
+    <h3>Why AI helps here</h3>
+    <p>Vertex AI enriches detections so analysts get the “why” without digging through raw logs.</p>
+    <ul class="dash">
+      <li><code>ai.summary</code> — a short narrative of what happened and why it matters.</li>
+      <li><code>ai.signals</code> — extracted indicators (geo jump, ASN change, failed→success login chain, decoy touch).</li>
+      <li><code>ai.confidence</code> — model confidence (0–100); useful for sorting triage queues.</li>
+    </ul>
+    <p class="muted">Where to view in Kibana: open an alert → <em>Alert details</em> panel → fields tab; add <code>ai.*</code> fields as columns or inspect in the JSON view.</p>
+  </div>
+  <div class="callout privacy">
+    <h3>Security &amp; Privacy</h3>
+    <ul class="dash">
+      <li><strong>Synthetic-only</strong> traffic for demos; no customer data, no PII.</li>
+      <li>Network egress is limited to Elastic and GCP services used by the demo.</li>
+      <li>All identities, IPs, and locations used are placeholders (RFC 5737 ranges, test usernames).</li>
+    </ul>
+  </div>
+</div>
 <h2>Architecture</h2>
 <p>The platform is decomposed into small services connected by HTTPS and Elastic APIs. Below is the high‑level flow and the major components.</p>
 
