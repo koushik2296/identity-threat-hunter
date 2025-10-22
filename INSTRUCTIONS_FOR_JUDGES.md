@@ -1,4 +1,3 @@
-
 # Identity Threat Hunter (ITH) — Judge Instructions
 
 Evaluation and testing guide for hackathon judges.  
@@ -32,10 +31,15 @@ Identity Threat Hunter (ITH) demonstrates end‑to‑end identity threat detecti
 
 1. Open the **Analyst UI** in a browser.
 2. Click any scenario (e.g., **Impossible Travel**) or **Trigger All**.
-3. Wait ~1 minute and open **Kibana → Security → Alerts**.
-4. Click an alert and confirm the **AI explanation** in `rule.explanation`.
-5. Go to **Discover**, select `ith-events*`, and filter `ai.enriched:true`.
-6. Verify `ai.summary`, `ai.confidence`, and `event.scenario` on recent events.
+3. *(Optional PowerShell burst using only ITH_Burst_Trigger.ps1)*
+   ```powershell
+   $IngestUrl = "<ITH_INGESTOR_URL>/ingest"
+   .\scripts\ITH_Burst_Trigger.ps1 -Mode ingestor -IngestUrl $IngestUrl -BurstSeconds 60
+   ```
+4. Wait ~1 minute and open **Kibana → Security → Alerts**.
+5. Click an alert and confirm the **AI explanation** in `rule.explanation`.
+6. Go to **Discover**, select `ith-events*`, and filter `ai.enriched:true`.
+7. Verify `ai.summary`, `ai.confidence`, and `event.scenario` on recent events.
 
 ---
 
@@ -81,3 +85,11 @@ Identity Threat Hunter (ITH) demonstrates end‑to‑end identity threat detecti
 - [ ] `ai.*` fields present in `ith-events*`.
 - [ ] Quantum Guardian entries visible when triggered.
 - [ ] End‑to‑end flow (UI → Ingest → AI → Elastic → Alerts) demonstrated.
+
+
+---
+
+### Additional AI Components (Context Only)
+- **analyst-notes** enriches Elastic alerts with AI-generated analyst notes and context.
+- **ith-digital-twin** analyzes deviations between baseline identity behavior and active sessions.
+- **ith-ui-ai** provides AI-augmented alert summaries and recommendations in the Analyst UI.

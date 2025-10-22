@@ -1,4 +1,3 @@
-
 # Identity Threat Hunter — Technical Runbook (AI‑Enriched, step‑by‑step)
 
 ## Overview
@@ -39,13 +38,13 @@ ls -la
 ## C. Environment setup
 ```bash
 export PROJECT="ith-koushik-hackathon"
-export REGION="us-central1"
+export REGION="us-east4"
 export TAG="$(date +%Y%m%d%H%M%S)"
 export GCR_HOST="gcr.io/$PROJECT"
 export ELASTIC_CLOUD_URL="<ELASTIC_URL>"
 export ELASTIC_API_KEY="<ELASTIC_API_KEY>"
-export VERTEX_LOCATION="us-central1"
-export VERTEX_MODEL="gemini-1.5-pro"  # example
+export VERTEX_LOCATION="us-east4"
+export VERTEX_MODEL="gemini-2.5-flash"  # example
 gcloud auth login
 gcloud config set project $PROJECT
 gcloud config set run/region $REGION
@@ -116,6 +115,13 @@ gcloud run deploy quantum-guardian --image "$GCR_HOST/quantum-guardian:$TAG"   -
 
 ## H. Trigger tests
 
+### 0) Burst Trigger (PowerShell) — **Recommended for demo**
+```powershell
+$IngestUrl = "<ITH_INGESTOR_URL>/ingest"
+.\scripts\ITH_Burst_Trigger.ps1 -Mode ingestor -IngestUrl $IngestUrl -BurstSeconds 60
+```
+Generates multiple scenarios (Impossible Travel, MFA Bypass, Honey Identity, etc.) in a short window for validation.
+
 ### 1) Smoke Test (curl)
 ```bash
 curl -X POST "$INGEST_URL/ingest" -H "Content-Type: application/json" -d '
@@ -179,12 +185,12 @@ gcloud secrets delete elastic-api-key --quiet || true
 ## L. Environment Template
 ```
 PROJECT=ith-koushik-hackathon
-REGION=us-central1
+REGION=us-east4
 ELASTIC_CLOUD_URL=cloud-id:...
 ELASTIC_API_KEY=REPLACE_WITH_SECRET
 INGEST_URL=https://<ith-ingestor>.run.app/ingest
-VERTEX_LOCATION=us-central1
-VERTEX_MODEL=gemini-1.5-pro
+VERTEX_LOCATION=us-east4
+VERTEX_MODEL=gemini-2.5-flash
 JUDGE_USERNAME=ith_judge
 # JUDGE_PASSWORD stored in Secret Manager
 ```
@@ -205,7 +211,7 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
       - run: gcloud builds submit services/ingestor --tag "gcr.io/${{ secrets.GCP_PROJECT }}/ith-ingestor:${{ github.run_number }}"
-      - run: gcloud run deploy ith-ingestor --image "gcr.io/${{ secrets.GCP_PROJECT }}/ith-ingestor:${{ github.run_number }}" --region us-central1 --allow-unauthenticated --set-env-vars "ELASTIC_CLOUD_URL=${{ secrets.ELASTIC_URL }},ELASTIC_API_KEY=${{ secrets.ELASTIC_API_KEY }},ELASTIC_INDEX=ith-events,VERTEX_LOCATION=us-central1,VERTEX_MODEL=gemini-1.5-pro"
+      - run: gcloud run deploy ith-ingestor --image "gcr.io/${{ secrets.GCP_PROJECT }}/ith-ingestor:${{ github.run_number }}" --region us-east4 --allow-unauthenticated --set-env-vars "ELASTIC_CLOUD_URL=${{ secrets.ELASTIC_URL }},ELASTIC_API_KEY=${{ secrets.ELASTIC_API_KEY }},ELASTIC_INDEX=ith-events,VERTEX_LOCATION=us-east4,VERTEX_MODEL=gemini-2.5-flash"
 ```
 
 ---
@@ -218,3 +224,32 @@ jobs:
 - [ ] Trigger tests
 - [ ] Validate AI fields and alerts
 - [ ] Cleanup
+
+
+---
+
+## F.1 Additional Optional Services
+
+### 5) Analyst Notes
+AI-generated note-taking microservice that captures analyst insights and appends contextual summaries to detected alerts.
+```bash
+cd services/analyst-notes
+gcloud builds submit . --tag "$GCR_HOST/analyst-notes:$TAG"
+gcloud run deploy analyst-notes --image "$GCR_HOST/analyst-notes:$TAG" --region $REGION --allow-unauthenticated
+```
+
+### 6) Digital Twin
+Identity modeling engine that detects deviations between real-world user behavior and their baseline “digital twin.”
+```bash
+cd services/ith-digital-twin
+gcloud builds submit . --tag "$GCR_HOST/ith-digital-twin:$TAG"
+gcloud run deploy ith-digital-twin --image "$GCR_HOST/ith-digital-twin:$TAG" --region $REGION --allow-unauthenticated
+```
+
+### 7) UI-AI
+Enhanced AI-driven Analyst UI providing adaptive risk summaries and recommendation features.
+```bash
+cd services/ith-ui-ai
+gcloud builds submit . --tag "$GCR_HOST/ith-ui-ai:$TAG"
+gcloud run deploy ith-ui-ai --image "$GCR_HOST/ith-ui-ai:$TAG" --region $REGION --allow-unauthenticated
+```

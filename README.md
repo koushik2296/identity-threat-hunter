@@ -1,4 +1,3 @@
-
 # Identity Threat Hunter (ITH)
 
 Live Website: https://koushik2296.github.io/identity-threat-hunter/
@@ -7,35 +6,31 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 
 ---
 
-## Architecture
+## Architecture Overview
 
-**Flow (1 → 6)**  
-1. **Event Generator / Burst** creates realistic identity events (brute‑force→success, impossible travel, rare ASN, honey identity).  
-2. **Ingestor (Cloud Run)** receives JSON (`/ingest`), validates/normalizes, writes to `ith-events*`.  
-3. **Elastic Detections** run continuously using your rule pack (Baseline + Extended).  
-4. **AI Enrichment (Vertex AI)** summarizes signals, extracts indicators, confidence → `ai.*` fields.  
-5. **Analyst UI** and **Kibana Alerts** render detections, explanations, timelines.  
-6. **Response (optional)** can notify SOAR/Slack/Webhooks (demo focuses on visibility).
+*Architecture diagram is placed directly below this Overview, matching the live site layout.*
 
-**Core Microservices**
-- **Event Generator**: CLI + website link; supports Trigger All (Burst).
-- **Ingestor**: Cloud Run (Python/FastAPI); validates JSON and writes to `ith-events*`.
-- **Analyst UI**: Cloud Run front-end for quick filters and judge‑friendly visuals.
+```
+[User / Judge] → ith-ui (Analyst UI, Cloud Run)
+                  │
+                  ├──> ith-event-gen → ith-ingestor ──► Elastic Cloud (ith-events*)
+                  │                        │
+                  │                        └─► Vertex AI (Gemini) ⇢ ai.summary / ai.confidence / event.scenario
+                  │
+                  ├──> quantum-guardian ──► Elastic (quantum-guardian*)
+                  └──> Kibana (Rules & Alerts)
+```
 
-**AI & Detection**
-- **Rules**: Baseline 7 (featured) + Extended catalog (import via NDJSON).
-- **AI fields**: `ai.summary`, `ai.signals`, `ai.confidence` embedded in alerts.
-- **Tags**: `ITH:baseline`, `ITH:extended` for clean filtering in Kibana.
-
+---
 
 ## Services
 
 | Service | Purpose | Deployment |
 |---|---|---|
-| **ith-ui** | Analyst interface for scenario triggers and demonstrations. | https://ith-ui-1054075376433.us-central1.run.app |
+| **ith-ui** | Analyst interface for scenario triggers and demonstrations. | https://ith-ui-1054075376433.us-east4.run.app |
 | **ith-ingestor** | Receives events, calls Vertex AI to enrich, indexes to Elastic. | https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest |
 | **ith-event-gen** | Synthetic event generator for attack simulations. | https://ith-event-gen-wcax3xalza-uc.a.run.app |
-| **quantum-guardian** | Produces cryptographic exposure findings (QES). | https://quantum-guardian-1054075376433.us-central1.run.app |
+| **quantum-guardian** | Produces cryptographic exposure findings (QES). | https://quantum-guardian-1054075376433.us-east4.run.app |
 | **ith-alert** | Optional webhook receiver for alert actions. | Cloud Run: ith-alert |
 
 ---
@@ -80,8 +75,8 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 
 | Resource | Link |
 |---|---|
-| **Kibana Alerts (Default Space)** | https://4e09aacaaf5546ea985fe43d16a0a09d.us-central1.gcp.cloud.es.io/app/security/alerts |
-| **ITH UI (Cloud Run)** | https://ith-ui-1054075376433.us-central1.run.app |
+| **Kibana Alerts (Default Space)** | https://4e09aacaaf5546ea985fe43d16a0a09d.us-east4.gcp.cloud.es.io/app/security/alerts |
+| **ITH UI (Cloud Run)** | https://ith-ui-1054075376433.us-east4.run.app |
 
 **Judge Credentials**  
 Username: `ith_judge`  
@@ -91,6 +86,8 @@ Access: Read‑only (Security → Alerts, Discover)
 ---
 
 ## Quick Start (Deployment Guide)
+
+**Need a technical deep‑dive or assistance? See the detailed [README_RUNBOOK.md](README_RUNBOOK.md).**
 
 ### Prerequisites
 - Active Google Cloud Project (billing enabled)
@@ -110,11 +107,11 @@ Access: Read‑only (Security → Alerts, Discover)
 2. **Set environment**
    ```bash
    export PROJECT="<YOUR_GCP_PROJECT>"
-   export REGION="us-central1"
+   export REGION="us-east4"
    export ELASTIC_CLOUD_URL="<ELASTIC_URL>"
    export ELASTIC_API_KEY="<ELASTIC_API_KEY>"
-   export VERTEX_LOCATION="us-central1"
-   export VERTEX_MODEL="gemini-1.5-pro"   # example
+   export VERTEX_LOCATION="us-east4"
+   export VERTEX_MODEL="gemini-2.5-flash"   # example
    ```
 
 3. **Deploy Ingestor (AI‑enriched)**
@@ -166,4 +163,4 @@ Expected AI fields in **Discover** on `ith-events*`:
 
 Apache‑2.0
 
-_Last updated: 2025‑10‑19_
+_Last updated: 2025‑10‑21_
