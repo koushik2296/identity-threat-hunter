@@ -1,0 +1,2 @@
+"web: gunicorn main:app --bind :`$PORT --workers 1 --timeout 0" | `
+  Set-Content -Path "Procfile" -Encoding UTF8

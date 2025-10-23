@@ -111,7 +111,7 @@ Access: Read‑only (Security → Alerts, Discover)
    export ELASTIC_CLOUD_URL="<ELASTIC_URL>"
    export ELASTIC_API_KEY="<ELASTIC_API_KEY>"
    export VERTEX_LOCATION="us-east4"
-   export VERTEX_MODEL="gemini-2.5-flash"   # example
+   export VERTEX_MODEL="gemini-2.5-flash"   
    ```
 
 3. **Deploy Ingestor (AI‑enriched)**
