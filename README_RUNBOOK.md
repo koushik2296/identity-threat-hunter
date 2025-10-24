@@ -256,7 +256,7 @@ gcloud run deploy ith-ui-ai --image "$GCR_HOST/ith-ui-ai:$TAG" --region $REGION 
 
 
 
-## System Enhancements (October 23, 2025)
+## System Enhancements 
 - **Gemini-2.5-Flash** now powers enrichment summaries and correlation analysis.
 - **Dual indices:** `ith-events` (primary) + `quantum-guardian` (secondary) verified via Cloud Run logs.
 - **Strict-match detection rules** imported through `ITH_Rules_Final_Strict.ndjson`.

@@ -27,7 +27,7 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 
 | Service | Purpose | Deployment |
 |---|---|---|
-| **ith-ui** | Analyst interface for scenario triggers and demonstrations. | https://ith-ui-1054075376433.us-east4.run.app |
+| **ith-ui** | Analyst interface for scenario triggers and demonstrations. | https://ith-ui-1054075376433.us-central1.run.app/ |
 | **ith-ingestor** | Receives events, calls Vertex AI to enrich, indexes to Elastic. | https://ith-ingestor-wcax3xalza-uc.a.run.app/ingest |
 | **ith-event-gen** | Synthetic event generator for attack simulations. | https://ith-event-gen-wcax3xalza-uc.a.run.app |
 | **quantum-guardian** | Produces cryptographic exposure findings (QES). | https://quantum-guardian-1054075376433.us-east4.run.app |
@@ -76,7 +76,7 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 | Resource | Link |
 |---|---|
 | **Kibana Alerts (Default Space)** | https://4e09aacaaf5546ea985fe43d16a0a09d.us-east4.gcp.cloud.es.io/app/security/alerts |
-| **ITH UI (Cloud Run)** | https://ith-ui-1054075376433.us-east4.run.app |
+| **ITH UI (Cloud Run)** | hhttps://ith-ui-1054075376433.us-central1.run.app/ |
 
 **Judge Credentials**  
 Username: `ith_judge`  
