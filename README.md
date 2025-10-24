@@ -44,7 +44,7 @@ Identity Threat Hunter (ITH) is a cloud‑native identity‑security analytics p
 {
   "ai.enriched": true,
   "ai.summary": "Detected impossible travel with inconsistent MFA patterns",
-  "ai.confidence": 0.93,
+  "ai.confidence": 0.9,
   "event.scenario": "impossible_travel",
   "rule.explanation": "AI fusion: correlated geo anomaly and password spraying indicators"
 }
@@ -164,3 +164,20 @@ Expected AI fields in **Discover** on `ith-events*`:
 Apache‑2.0
 
 _Last updated: 2025‑10‑21_
+
+
+
+## System Update Summary (October 23, 2025)
+- **AI Model:** Upgraded to Vertex AI `gemini-2.5-flash` for advanced contextual summaries.
+- **Indices:** Now dual-ingest into `ith-events` (primary) and `quantum-guardian` (AI-extended findings).
+- **Rules:** Introduced 30 strict-match rules ensuring alerts trigger only for intended detections.
+- **Correlation ID:** Each event includes a `correlation_id` for linked multi-stage identity detections.
+
+### Endpoint Reference
+| Component | Purpose | URL |
+|------------|----------|-----|
+| Analyst UI | Frontend for detections | https://ith-ui-1054075376433.us-central1.run.app/ |
+| ITH Ingestor API | Cloud Run enrichment service | https://ith-ingestor-1054075376433.us-central1.run.app/ingest |
+| Elastic Cloud | Detection and analytics backend | https://f5df49d7c58f4beeafe303718a943a44.us-central1.gcp.cloud.es.io |
+| Quantum Guardian | Internal AI add-on index | (Integrated module) |
+

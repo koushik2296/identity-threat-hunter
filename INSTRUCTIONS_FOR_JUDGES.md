@@ -33,8 +33,8 @@ Identity Threat Hunter (ITH) demonstrates end‑to‑end identity threat detecti
 2. Click any scenario (e.g., **Impossible Travel**) or **Trigger All**.
 3. *(Optional PowerShell burst using only ITH_Burst_Trigger.ps1)*
    ```powershell
-   $IngestUrl = "<ITH_INGESTOR_URL>/ingest"
-   .\scripts\ITH_Burst_Trigger.ps1 -Mode ingestor -IngestUrl $IngestUrl -BurstSeconds 60
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\ITH_Burst_Trigger.ps1 -IngestUrl "https://ith-ingestor-1054075376433.us-central1.run.app" -DurationSec 120 -Rps 30
    ```
 4. Wait ~1 minute and open **Kibana → Security → Alerts**.
 5. Click an alert and confirm the **AI explanation** in `rule.explanation`.
@@ -93,3 +93,27 @@ Identity Threat Hunter (ITH) demonstrates end‑to‑end identity threat detecti
 - **analyst-notes** enriches Elastic alerts with AI-generated analyst notes and context.
 - **ith-digital-twin** analyzes deviations between baseline identity behavior and active sessions.
 - **ith-ui-ai** provides AI-augmented alert summaries and recommendations in the Analyst UI.
+
+
+
+## System Enhancements (October 23, 2025)
+- **Gemini-2.5-Flash** used for AI summaries and contextual risk narratives.
+- **Dual-Index Architecture:** Alerts generated in both `ith-events` and `quantum-guardian`.
+- **Strict-match rule mapping:** Prevents unrelated rule firing.
+- **Correlation IDs:** Link primary + meta alerts for advanced traceability.
+
+### Updated Endpoints
+| Component | Purpose | URL |
+|------------|----------|-----|
+| Analyst UI | Interface for testing detections | https://ith-ui-1054075376433.us-central1.run.app/ |
+| Ingestor API | Cloud Run enrichment backend | https://ith-ingestor-1054075376433.us-central1.run.app/ingest |
+| Elastic Cloud | Detection and analytics backend | https://f5df49d7c58f4beeafe303718a943a44.us-central1.gcp.cloud.es.io |
+
+### Judge Checklist
+| Analyst-UI Action | Expected Rule | Additional Notes |
+|-------------------|----------------|------------------|
+| Impossible Travel | ITH - Impossible Travel | May spawn linked Quantum Adaptive Response |
+| Rare Country Login | ITH - Rare Country Login | Confirm geo.src and ai.summary |
+| MFA Bypass Attempt | ITH - MFA Bypass Attempt | Should show high severity in ai.summary |
+| Privilege Escalation | ITH - Privilege Escalation | Look for correlation ID in paired events |
+| Canary Probe | ITH - Canary User Login Attempt | Honey Identity Trap meta alert expected |

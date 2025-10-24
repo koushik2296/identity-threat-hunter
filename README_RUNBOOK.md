@@ -44,7 +44,7 @@ export GCR_HOST="gcr.io/$PROJECT"
 export ELASTIC_CLOUD_URL="<ELASTIC_URL>"
 export ELASTIC_API_KEY="<ELASTIC_API_KEY>"
 export VERTEX_LOCATION="us-east4"
-export VERTEX_MODEL="gemini-2.5-flash"  # example
+export VERTEX_MODEL="gemini-2.5-flash"  
 gcloud auth login
 gcloud config set project $PROJECT
 gcloud config set run/region $REGION
@@ -252,4 +252,27 @@ Enhanced AI-driven Analyst UI providing adaptive risk summaries and recommendati
 cd services/ith-ui-ai
 gcloud builds submit . --tag "$GCR_HOST/ith-ui-ai:$TAG"
 gcloud run deploy ith-ui-ai --image "$GCR_HOST/ith-ui-ai:$TAG" --region $REGION --allow-unauthenticated
+```
+
+
+
+## System Enhancements (October 23, 2025)
+- **Gemini-2.5-Flash** now powers enrichment summaries and correlation analysis.
+- **Dual indices:** `ith-events` (primary) + `quantum-guardian` (secondary) verified via Cloud Run logs.
+- **Strict-match detection rules** imported through `ITH_Rules_Final_Strict.ndjson`.
+- **Correlation ID linking:** Events linked between indices for unified alert context.
+- **External index warnings resolved:** Removed references to `external-security-alerts*`.
+
+### Updated Endpoints
+| Service | Description | URL |
+|----------|--------------|-----|
+| Analyst UI | Frontend for manual test and scenario triggers | https://ith-ui-1054075376433.us-central1.run.app/ |
+| Ingestor API | Vertex AI + Elastic enrichment microservice | https://ith-ingestor-1054075376433.us-central1.run.app/ingest |
+| Elastic Cloud | Main analytics and alerting | https://f5df49d7c58f4beeafe303718a943a44.us-central1.gcp.cloud.es.io |
+
+### Judge Verification Quick Commands
+```powershell
+Invoke-RestMethod -Uri "https://ith-ingestor-1054075376433.us-central1.run.app/health"
+$body = @{ rule_name = "ITH - Impossible Travel"; event = @{ "event.action"="login"; "user.name"="judge_user" } } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "https://ith-ingestor-1054075376433.us-central1.run.app/ingest" -Headers @{"Content-Type"="application/json"} -Body $body
 ```
